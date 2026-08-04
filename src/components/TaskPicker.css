@@ -1,0 +1,139 @@
+.picker-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.picker-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+.picker-card {
+  position: relative;
+  width: min(92vw, 400px);
+  max-height: min(78vh, 560px);
+  background: var(--t-panel);
+  border: 1px solid var(--t-hair);
+  border-radius: 14px;
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+.picker-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--t-hair);
+}
+.picker-title {
+  font-family: 'Michroma', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: var(--t-text);
+}
+.picker-subtitle {
+  margin-top: 6px;
+  font-weight: 300;
+  font-size: 13px;
+  color: var(--t-muted);
+}
+.picker-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 12px;
+}
+.picker-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-right: -8px;
+  padding-right: 8px;
+}
+.picker-section-label {
+  font-family: 'Michroma', sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  color: var(--t-faint);
+  padding: 14px 0 4px;
+}
+.picker-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 8px;
+  margin: 1px 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.picker-item:hover {
+  border-color: var(--t-hair2);
+  background: var(--t-btn);
+}
+.picker-item--current {
+  border-color: var(--accent);
+}
+.picker-item-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--t-hair2);
+}
+.picker-item:hover .picker-item-dot,
+.picker-item--current .picker-item-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 7px var(--glow);
+}
+.picker-item-text {
+  flex: 1;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--t-text);
+  overflow-wrap: anywhere;
+}
+.picker-item-hint {
+  flex: none;
+  font-family: 'Michroma', sans-serif;
+  font-size: 7px;
+  letter-spacing: 0.22em;
+  color: var(--t-faint);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.picker-item:hover .picker-item-hint {
+  opacity: 1;
+}
+.picker-skip {
+  margin-top: 14px;
+  align-self: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Michroma', sans-serif;
+  font-size: 8.5px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--t-faint);
+  padding: 8px 0 2px;
+  transition: color 0.25s;
+}
+.picker-skip:hover {
+  color: var(--t-text);
+}

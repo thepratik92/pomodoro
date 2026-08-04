@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Stage from './components/Stage';
 import Footer from './components/Footer';
 import PitBoard from './components/PitBoard';
+import TaskPicker from './components/TaskPicker';
 import Telemetry from './components/Telemetry';
 import Setup from './components/Setup';
 
@@ -60,12 +61,25 @@ export default function App() {
         transform={panelTf('board', 'left')}
         draft={draft}
         todos={todos}
+        currentTaskId={tempo.currentTaskId}
         onClose={tempo.closePanels}
         onDraftChange={tempo.setDraft}
         onAddTodo={tempo.addTodo}
         onToggleTodo={tempo.toggleTodo}
         onDeleteTodo={tempo.delTodo}
+        onMoveTodo={tempo.moveTodo}
         onClearDone={tempo.clearDone}
+      />
+
+      <TaskPicker
+        open={Boolean(tempo.picker)}
+        intent={tempo.picker}
+        todos={todos}
+        currentTaskId={tempo.currentTaskId}
+        onPick={tempo.pickTask}
+        onAdd={tempo.addTaskAndFocus}
+        onStartWithoutTask={tempo.startWithoutTask}
+        onClose={tempo.closePicker}
       />
 
       <Telemetry transform={panelTf('telemetry', 'right')} days={days} stats={stats} sync={sync} onClose={tempo.closePanels} />

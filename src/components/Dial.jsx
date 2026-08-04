@@ -24,7 +24,7 @@ function buildTicks() {
   return lines;
 }
 
-export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle, laps }) {
+export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle, laps, currentTask, onTaskClick }) {
   const ticks = useMemo(buildTicks, []);
 
   const p = Math.min(1, Math.max(0, 1 - remainingMs / totalMs));
@@ -80,6 +80,21 @@ export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle
         <div className="state-line" style={{ color: stateColor }}>
           {stateLine}
         </div>
+        <button
+          type="button"
+          className={'task-line' + (currentTask ? '' : ' task-line--empty')}
+          onClick={onTaskClick}
+          title={currentTask ? 'Change focus task' : 'Set focus task'}
+        >
+          {currentTask ? (
+            <>
+              <span className="task-line-dot"></span>
+              <span className="task-line-text">{currentTask.text}</span>
+            </>
+          ) : (
+            '+ SET FOCUS TASK'
+          )}
+        </button>
       </div>
     </section>
   );

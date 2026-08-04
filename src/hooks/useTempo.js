@@ -23,6 +23,8 @@ const STEPPER_DEFS = {
   laps: { step: 1, min: 2, max: 8 },
 };
 
+export const BUCKETS = ['today', 'tomorrow', 'someday'];
+
 const initialState = {
   mode: 'focus',
   running: false,
@@ -31,6 +33,9 @@ const initialState = {
   panel: 'board',
   settings: DEFAULT_SETTINGS,
   todos: [],
+  currentTaskId: null,
+  // null | 'start' (picking before a stint starts) | 'switch' (changing task any time)
+  picker: null,
   days: {},
   draft: '',
   sync: 'off',
@@ -143,7 +148,51 @@ export function useTempo() {
     setState({ running: false, remaining: Math.max(0, endAtRef.current - Date.now()) });
   };
 
-  const toggleRun = () => (state.running ? pauseRun() : startRun());
+  const currentTask = state.todos.find((t) => t.id === state.currentTaskId && !t.done) || null;
+
+  const toggleRun = () => {
+    if (state.running) {
+      pauseRun();
+      return;
+    }
+    // Starting a focus stint without a task on the board: ask what it's for.
+    if (state.mode === 'focus' && !currentTask) {
+      setState({ picker: 'start' });
+      return;
+    }
+    startRun();
+  };
+
+  const openPicker = (intent) => setState({ picker: intent });
+  const closePicker = () => setState({ picker: null });
+
+  const pickTask = (id) => {
+    const intent = state.picker;
+    setState((s) => ({
+      currentTaskId: id,
+      picker: null,
+      todos: s.todos.map((t) => (t.id === id ? { ...t, bucket: 'today' } : t)),
+    }));
+    if (intent === 'start') startRun();
+  };
+
+  const addTaskAndFocus = (text) => {
+    text = (text || '').trim();
+    if (!text) return;
+    const id = Date.now() + '' + Math.floor(Math.random() * 1e4);
+    const intent = state.picker;
+    setState((s) => ({
+      todos: [{ id, text, done: false, bucket: 'today' }, ...s.todos].slice(0, 80),
+      currentTaskId: id,
+      picker: null,
+    }));
+    if (intent === 'start') startRun();
+  };
+
+  const startWithoutTask = () => {
+    setState({ picker: null, currentTaskId: null });
+    startRun();
+  };
 
   const reset = () => {
     clearAuto();
@@ -165,18 +214,37 @@ export function useTempo() {
   const toggleDock = () => setState((s) => ({ docked: !s.docked }));
 
   const setDraft = (text) => setState({ draft: text });
-  const addTodo = () => {
+  const addTodo = (bucket) => {
     const text = state.draft.trim();
     if (!text) return;
+    const b = BUCKETS.includes(bucket) ? bucket : 'today';
     setState((s) => ({
-      todos: [{ id: Date.now() + '' + Math.floor(Math.random() * 1e4), text, done: false }, ...s.todos].slice(0, 80),
+      todos: [{ id: Date.now() + '' + Math.floor(Math.random() * 1e4), text, done: false, bucket: b }, ...s.todos].slice(0, 80),
       draft: '',
     }));
   };
   const toggleTodo = (id) =>
-    setState((s) => ({ todos: s.todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) }));
-  const delTodo = (id) => setState((s) => ({ todos: s.todos.filter((t) => t.id !== id) }));
+    setState((s) => {
+      const todos = s.todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+      const toggled = todos.find((t) => t.id === id);
+      // Checking off the active task retires it from the dial.
+      const currentTaskId = toggled && toggled.done && s.currentTaskId === id ? null : s.currentTaskId;
+      return { todos, currentTaskId };
+    });
+  const delTodo = (id) =>
+    setState((s) => ({
+      todos: s.todos.filter((t) => t.id !== id),
+      currentTaskId: s.currentTaskId === id ? null : s.currentTaskId,
+    }));
   const clearDone = () => setState((s) => ({ todos: s.todos.filter((t) => !t.done) }));
+  const moveTodo = (id) =>
+    setState((s) => ({
+      todos: s.todos.map((t) => {
+        if (t.id !== id) return t;
+        const cur = BUCKETS.indexOf(t.bucket || 'today');
+        return { ...t, bucket: BUCKETS[(cur + 1) % BUCKETS.length] };
+      }),
+    }));
 
   const stepSetting = (key, dir) => {
     const def = STEPPER_DEFS[key];
@@ -199,7 +267,7 @@ export function useTempo() {
   // Keep latest imperative handlers reachable from persistent listeners
   // (interval, keydown) without re-subscribing every render.
   const latestRef = useRef({});
-  latestRef.current = { state, toggleRun, reset, skip, closePanels, complete, endAtRef };
+  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-mode', state.mode);
@@ -244,7 +312,10 @@ export function useTempo() {
         l.toggleRun();
       } else if (e.key === 'r' || e.key === 'R') l.reset();
       else if (e.key === 's' || e.key === 'S') l.skip();
-      else if (e.key === 'Escape') l.closePanels();
+      else if (e.key === 'Escape') {
+        if (l.state.picker) l.closePicker();
+        else l.closePanels();
+      }
     };
     window.addEventListener('keydown', keyH);
     return () => window.removeEventListener('keydown', keyH);
@@ -259,7 +330,10 @@ export function useTempo() {
         const p = JSON.parse(raw);
         if (p && typeof p === 'object') {
           patch.days = p.days || {};
-          patch.todos = Array.isArray(p.todos) ? p.todos.slice(0, 80) : [];
+          patch.todos = Array.isArray(p.todos)
+            ? p.todos.slice(0, 80).map((t) => ({ ...t, bucket: BUCKETS.includes(t.bucket) ? t.bucket : 'today' }))
+            : [];
+          patch.currentTaskId = typeof p.currentTaskId === 'string' ? p.currentTaskId : null;
           if (p.settings) {
             const s = { ...DEFAULT_SETTINGS };
             for (const k of Object.keys(s)) if (k in p.settings) s[k] = p.settings[k];
@@ -290,7 +364,13 @@ export function useTempo() {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       try {
-        const payload = JSON.stringify({ v: 1, days: state.days, todos: state.todos, settings: state.settings });
+        const payload = JSON.stringify({
+          v: 2,
+          days: state.days,
+          todos: state.todos,
+          settings: state.settings,
+          currentTaskId: state.currentTaskId,
+        });
         if (window.localStorage) {
           window.localStorage.setItem(STORAGE_KEY, payload);
           setState({ sync: 'local' });
@@ -301,7 +381,7 @@ export function useTempo() {
     }, SAVE_DEBOUNCE_MS);
     return () => clearTimeout(saveTimerRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.days, state.todos, state.settings]);
+  }, [state.days, state.todos, state.settings, state.currentTaskId]);
 
   useEffect(() => clearAuto, []);
 
@@ -334,6 +414,7 @@ export function useTempo() {
     totalMs,
     stepperDefs: STEPPER_DEFS,
     stats,
+    currentTask,
     toggleRun,
     reset,
     skip,
@@ -348,7 +429,13 @@ export function useTempo() {
     toggleTodo,
     delTodo,
     clearDone,
+    moveTodo,
     stepSetting,
     toggleSetting,
+    openPicker,
+    closePicker,
+    pickTask,
+    addTaskAndFocus,
+    startWithoutTask,
   };
 }

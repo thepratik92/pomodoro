@@ -112,6 +112,51 @@
   min-height: 10px;
 }
 
+/* Current focus task, always shown with the clock (clickable to change) */
+.task-line {
+  pointer-events: auto;
+  margin-top: 12px;
+  max-width: 64%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--t-text);
+  transition: color 0.25s;
+}
+.task-line:hover {
+  color: var(--accent);
+}
+.task-line--empty {
+  font-family: 'Michroma', sans-serif;
+  font-size: 7.5px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--t-faint);
+}
+.task-line--empty:hover {
+  color: var(--t-muted);
+}
+.task-line-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 7px var(--glow);
+}
+.task-line-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* Controls */
 .controls {
   display: flex;
