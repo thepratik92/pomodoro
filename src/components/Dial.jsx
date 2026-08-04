@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 function buildTicks() {
   const lines = [];
@@ -26,6 +26,28 @@ function buildTicks() {
 
 export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle, laps, currentTask, onTaskClick }) {
   const ticks = useMemo(buildTicks, []);
+
+  // Ticker scroll for task names too long for the banner.
+  const viewRef = useRef(null);
+  const textRef = useRef(null);
+  const [marquee, setMarquee] = useState(null);
+  const taskText = currentTask ? currentTask.text : null;
+  useEffect(() => {
+    const measure = () => {
+      const v = viewRef.current;
+      const t = textRef.current;
+      if (!v || !t) {
+        setMarquee(null);
+        return;
+      }
+      const overflow = t.scrollWidth - v.clientWidth;
+      if (overflow > 4) setMarquee({ shift: -overflow, dur: Math.max(6, overflow / 25 + 4) });
+      else setMarquee(null);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [taskText]);
 
   const p = Math.min(1, Math.max(0, 1 - remainingMs / totalMs));
   const a = ((135 + p * 270) * Math.PI) / 180;
@@ -80,22 +102,32 @@ export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle
         <div className="state-line" style={{ color: stateColor }}>
           {stateLine}
         </div>
-        <button
-          type="button"
-          className={'task-line' + (currentTask ? '' : ' task-line--empty')}
-          onClick={onTaskClick}
-          title={currentTask ? 'Change focus task' : 'Set focus task'}
-        >
-          {currentTask ? (
-            <>
-              <span className="task-line-dot"></span>
-              <span className="task-line-text">{currentTask.text}</span>
-            </>
-          ) : (
-            '+ SET FOCUS TASK'
-          )}
-        </button>
       </div>
+      <button
+        type="button"
+        className="task-banner"
+        onClick={onTaskClick}
+        title={currentTask ? 'Change focus task' : 'Set focus task'}
+      >
+        {currentTask ? (
+          <>
+            <span className="task-banner-label">CURRENT TASK</span>
+            <span className="task-banner-pill">
+              <span className={'task-banner-viewport' + (marquee ? ' task-banner-viewport--scroll' : '')} ref={viewRef}>
+                <span
+                  className={'task-banner-text' + (marquee ? ' task-banner-text--scroll' : '')}
+                  ref={textRef}
+                  style={marquee ? { '--marq-shift': marquee.shift + 'px', '--marq-dur': marquee.dur + 's' } : undefined}
+                >
+                  {currentTask.text}
+                </span>
+              </span>
+            </span>
+          </>
+        ) : (
+          <span className="task-banner-empty">+ SET FOCUS TASK</span>
+        )}
+      </button>
     </section>
   );
 }

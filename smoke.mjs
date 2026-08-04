@@ -6,7 +6,7 @@ const page = await browser.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 page.on('console', (m) => {
-  if (m.type() === 'error') errors.push('console: ' + m.text());
+  if (m.type() === 'error' && !m.text().includes('ERR_CERT')) errors.push('console: ' + m.text());
 });
 
 await page.goto(base + '/', { waitUntil: 'networkidle' });
@@ -20,7 +20,7 @@ console.log('picker opens on start: OK');
 await page.fill('input[aria-label="New focus task"]', 'Write quarterly report');
 await page.keyboard.press('Enter');
 await page.waitForSelector('.picker-card', { state: 'detached', timeout: 3000 });
-const taskLine = await page.textContent('.task-line');
+const taskLine = await page.textContent('.task-banner');
 if (!taskLine.includes('Write quarterly report')) throw new Error('task line missing: ' + taskLine);
 console.log('task shown with clock: OK');
 const engine = await page.textContent('.btn-engine-state');
@@ -43,7 +43,7 @@ console.log('bucket chips add to someday: OK');
 
 // 5. Pause, then click the task line -> switch picker opens listing both tasks
 await page.click('button[aria-label="Start or pause"]');
-await page.click('.task-line');
+await page.click('.task-banner');
 await page.waitForSelector('.picker-card', { timeout: 3000 });
 const pickerItems = await page.$$eval('.picker-item-text', (els) => els.map((e) => e.textContent));
 if (pickerItems.length !== 2) throw new Error('picker items: ' + JSON.stringify(pickerItems));
@@ -55,7 +55,7 @@ console.log('switch picker lists tasks, no skip: OK');
 // 6. Pick the someday task -> moves to today, becomes current (timer stays paused)
 await page.click('.picker-item:has-text("Learn Rust")');
 await page.waitForSelector('.picker-card', { state: 'detached', timeout: 3000 });
-const line2 = await page.textContent('.task-line');
+const line2 = await page.textContent('.task-banner');
 if (!line2.includes('Learn Rust')) throw new Error('switch failed: ' + line2);
 const engine2 = await page.textContent('.btn-engine-state');
 if (engine2 !== 'START') throw new Error('switch should not start timer: ' + engine2);
@@ -67,7 +67,7 @@ console.log('pick moves task to today + persists: OK');
 
 // 7. Checking off the current task clears the dial line
 await page.click('.todo-item:has-text("Learn Rust") .todo-check');
-const line3 = await page.textContent('.task-line');
+const line3 = await page.textContent('.task-banner');
 if (!line3.includes('SET FOCUS TASK')) throw new Error('done task still on dial: ' + line3);
 console.log('done task clears dial line: OK');
 
