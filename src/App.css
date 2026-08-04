@@ -1,0 +1,45 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: padding-left 0.4s cubic-bezier(0.32, 0.72, 0.28, 1);
+}
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(52vmin 52vmin at 50% 46%, var(--t-shine), transparent 70%),
+    radial-gradient(80vmin 80vmin at 50% 46%, var(--ambient), transparent 72%);
+  transition: opacity 1.4s ease;
+}
+
+.undock-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 30;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--t-btn);
+  border: 1px solid var(--t-hair);
+  color: var(--t-muted);
+  cursor: pointer;
+  place-items: center;
+  transition:
+    color 0.25s,
+    border-color 0.25s;
+  padding: 0;
+}
+.undock-btn:hover {
+  color: var(--t-text);
+  border-color: var(--t-hair2);
+}
+.undock-btn svg {
+  width: 17px;
+  height: 17px;
+}

@@ -1,0 +1,115 @@
+.setup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--t-hair);
+}
+.setup-label {
+  font-family: 'Michroma', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  color: var(--t-muted);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.setup-unit {
+  font-size: 7.5px;
+  color: var(--t-faint);
+  letter-spacing: 0.26em;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.stepper-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: none;
+  border: 1px solid var(--t-hair);
+  color: var(--t-muted);
+  cursor: pointer;
+  font-weight: 300;
+  font-size: 17px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+  padding: 0;
+}
+.stepper-btn:hover {
+  color: var(--t-text);
+  border-color: var(--t-hair2);
+}
+.stepper-val {
+  min-width: 42px;
+  text-align: center;
+  font-weight: 300;
+  font-size: 19px;
+  color: var(--t-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.switch {
+  position: relative;
+  width: 42px;
+  height: 23px;
+  border-radius: 12px;
+  border: 1px solid;
+  cursor: pointer;
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+  padding: 0;
+}
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  transition:
+    transform 0.3s cubic-bezier(0.32, 0.72, 0.28, 1),
+    background 0.3s;
+}
+
+.theme-row {
+  display: flex;
+  gap: 6px;
+}
+.theme-btn {
+  background: none;
+  border: 1px solid;
+  border-radius: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-family: 'Michroma', sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+.theme-btn:hover {
+  color: var(--t-text) !important;
+}
+
+.setup-note {
+  margin-top: auto;
+  padding-top: 20px;
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--t-faint);
+  margin-bottom: 0;
+}

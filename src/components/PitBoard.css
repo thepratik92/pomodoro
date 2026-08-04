@@ -1,0 +1,136 @@
+.todo-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 0 14px;
+  border-bottom: 1px solid var(--t-hair);
+}
+.todo-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--t-hair);
+  padding: 7px 2px;
+  font-weight: 300;
+  font-size: 15.5px;
+  color: var(--t-text);
+  outline: none;
+  transition: border-color 0.3s;
+}
+.todo-input:focus {
+  border-bottom-color: var(--accent);
+}
+.todo-add-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: none;
+  border: 1px solid var(--t-hair);
+  color: var(--t-muted);
+  cursor: pointer;
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+  padding: 0;
+}
+.todo-add-btn:hover {
+  color: var(--t-text);
+  border-color: var(--t-hair2);
+}
+
+.todo-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-right: -8px;
+  padding-right: 8px;
+}
+.todo-empty {
+  padding: 26px 4px;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--t-faint);
+}
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--t-hair);
+}
+.todo-check {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
+  padding: 0;
+}
+.todo-check svg {
+  width: 9px;
+  height: 9px;
+  transition: opacity 0.2s;
+}
+.todo-text {
+  flex: 1;
+  font-weight: 300;
+  font-size: 15.5px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  transition: color 0.25s;
+}
+.todo-del {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--t-faint);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0.35;
+  transition:
+    opacity 0.2s,
+    color 0.2s;
+  padding: 0;
+}
+.todo-del:hover {
+  opacity: 1;
+  color: var(--t-text);
+}
+.todo-del svg {
+  width: 11px;
+  height: 11px;
+}
+
+.clear-done-btn {
+  margin-top: 14px;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Michroma', sans-serif;
+  font-size: 8.5px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--t-faint);
+  padding: 8px 0;
+  transition: color 0.25s;
+}
+.clear-done-btn:hover {
+  color: var(--t-text);
+}

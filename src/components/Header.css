@@ -1,0 +1,75 @@
+.topbar {
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--t-hair);
+}
+
+.topbar-side {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 6px;
+}
+.topbar-side--left {
+  left: 20px;
+}
+.topbar-side--right {
+  right: 20px;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--t-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    color 0.25s,
+    border-color 0.25s;
+  padding: 0;
+}
+.icon-btn:hover {
+  color: var(--t-text);
+  border-color: var(--t-hair);
+}
+
+.icon-svg {
+  width: 19px;
+  height: 19px;
+}
+
+.brand {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.brand-mark {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+.brand-title {
+  font-family: 'Michroma', sans-serif;
+  font-size: 17px;
+  letter-spacing: 0.55em;
+  text-indent: 0.55em;
+  color: var(--t-text);
+}
+.brand-subtitle {
+  margin-top: 1px;
+  font-family: 'Michroma', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: var(--t-muted);
+}
