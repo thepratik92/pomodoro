@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Titillium+Web:wght@200;300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--accent:var(--focus-accent,#FF2800);}
+  html[data-mode="short"]{--accent:#FFC400;}
+  html[data-mode="long"]{--accent:#9FC0DE;}
+  :root{--glow:color-mix(in srgb, var(--accent) 36%, transparent);--ambient:color-mix(in srgb, var(--accent) 4.5%, transparent);}
+  :root{--t-bg:#060607;--t-panel:#0D0D10;--t-text:#E9EAEC;--t-muted:#787D86;--t-faint:#43474F;--t-hair:rgba(255,255,255,.08);--t-hair2:rgba(255,255,255,.14);--t-track:rgba(255,255,255,.055);--t-shine:rgba(255,255,255,.035);--t-tick:rgba(255,255,255,.16);--t-tickmajor:rgba(255,255,255,.34);--t-switch:rgba(255,255,255,.09);--t-knob:#9A9EA6;--t-eng1:#1B1B1F;--t-eng2:#0B0B0E;--t-btn:rgba(255,255,255,.04);}
+  html[data-theme="light"]{--t-bg:#F5F5F2;--t-panel:#FFFFFF;--t-text:#1B1C1F;--t-muted:#6B7078;--t-faint:#A9ADB4;--t-hair:rgba(0,0,0,.09);--t-hair2:rgba(0,0,0,.16);--t-track:rgba(0,0,0,.07);--t-shine:rgba(0,0,0,.028);--t-tick:rgba(0,0,0,.22);--t-tickmajor:rgba(0,0,0,.45);--t-switch:rgba(0,0,0,.08);--t-knob:#8A8F96;--t-eng1:#FFFFFF;--t-eng2:#E9E9E4;--t-btn:rgba(0,0,0,.04);}
+  html[data-theme="sepia"]{--t-bg:#F1E7D2;--t-panel:#F9F1DF;--t-text:#3D3227;--t-muted:#8A7A62;--t-faint:#B7A98C;--t-hair:rgba(93,74,43,.15);--t-hair2:rgba(93,74,43,.25);--t-track:rgba(93,74,43,.12);--t-shine:rgba(93,74,43,.05);--t-tick:rgba(93,74,43,.25);--t-tickmajor:rgba(93,74,43,.5);--t-switch:rgba(93,74,43,.12);--t-knob:#8A7A62;--t-eng1:#FBF5E7;--t-eng2:#E7DAC0;--t-btn:rgba(93,74,43,.06);}
+  body{transition:background .4s ease,color .4s ease;}
+  html,body{height:100%;}
+  body{margin:0;background:var(--t-bg);color:var(--t-text);font-family:'Titillium Web','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  a{color:#FF2800;text-decoration:none;}
+  a:hover{color:#FF6A50;}
+  button,input{font-family:inherit;}
+  *{box-sizing:border-box;}
+  @keyframes breathe{0%,100%{opacity:.8}50%{opacity:1}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;position:relative;padding-left:{{stagePad}};transition:padding-left .4s cubic-bezier(.32,.72,.28,1)">
+  <div style="position:fixed;inset:0;pointer-events:none;background:radial-gradient(52vmin 52vmin at 50% 46%, var(--t-shine), transparent 70%),radial-gradient(80vmin 80vmin at 50% 46%, var(--ambient), transparent 72%);opacity:{{ambientOp}};animation:{{ambientAnim}};transition:opacity 1.4s ease"></div>
+
+  <header style="width:100%;display:{{chromeDisplay}};align-items:center;justify-content:center;position:relative;padding:22px 28px 18px;border-bottom:1px solid var(--t-hair)">
+    <div style="position:absolute;left:20px;top:50%;transform:translateY(-50%)">
+      <button onClick="{{openBoard}}" aria-label="Open pit board (to-dos)" style="width:38px;height:38px;border-radius:50%;background:transparent;border:1px solid transparent;color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="width:19px;height:19px"><line x1="9" y1="6" x2="21" y2="6"></line><line x1="9" y1="12" x2="21" y2="12"></line><line x1="9" y1="18" x2="21" y2="18"></line><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"></circle><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"></circle><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"></circle></svg>
+      </button>
+    </div>
+    <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px">
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="width:17px;height:17px;display:block"><circle cx="12" cy="14.2" r="7.6" fill="none" stroke="#FF3B24" stroke-width="1.6"></circle><path d="M12 6.6 C10.4 4.9 8 4.4 6.3 5.5 C8.2 6.2 9.6 7 10.5 8.2 M12 6.6 C13.6 4.9 16 4.4 17.7 5.5 C15.8 6.2 14.4 7 13.5 8.2 M12 3.4 L12 7.2" fill="none" stroke="#4F9457" stroke-width="1.5" stroke-linecap="round"></path></svg>
+      <div>
+        <div style="font-family:'Michroma',sans-serif;font-size:17px;letter-spacing:.55em;text-indent:.55em;color:var(--t-text)">TEMPO</div>
+        <div style="margin-top:1px;font-family:'Michroma',sans-serif;font-size:9px;letter-spacing:.42em;text-indent:.42em;color:var(--t-muted)">POMODORO&nbsp;GT</div>
+      </div>
+    </div>
+    <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;gap:6px">
+      <button onClick="{{toggleDock}}" aria-label="Dock as widget" title="Dock as widget" style="width:38px;height:38px;border-radius:50%;background:transparent;border:1px solid transparent;color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:19px;height:19px"><line x1="12" y1="3" x2="12" y2="13"></line><polyline points="8 9 12 13 16 9"></polyline><line x1="5" y1="18" x2="19" y2="18"></line></svg>
+      </button>
+      <button onClick="{{openTelemetry}}" aria-label="Open telemetry (statistics)" style="width:38px;height:38px;border-radius:50%;background:transparent;border:1px solid transparent;color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="width:19px;height:19px"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      </button>
+      <button onClick="{{openSetup}}" aria-label="Open set-up" style="width:38px;height:38px;border-radius:50%;background:transparent;border:1px solid transparent;color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="width:19px;height:19px"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+      </button>
+    </div>
+  </header>
+
+  <main style="flex:1;width:min(92vw,620px);display:flex;flex-direction:column;align-items:center;padding-top:clamp(12px,3vh,30px)">
+    <nav aria-label="Session type" style="display:flex;align-items:center;gap:26px;margin-bottom:clamp(6px,1.8vh,16px)">
+      <sc-for list="{{modes}}" as="mo" hint-placeholder-count="3">
+        <button onClick="{{mo.pick}}" style="background:none;border:none;cursor:pointer;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:.24em;text-indent:.24em;text-transform:uppercase;color:{{mo.color}};padding:10px 2px 12px;position:relative;transition:color .25s" style-hover="color:var(--t-text)">{{mo.label}}<span style="position:absolute;left:50%;bottom:4px;transform:translateX(-50%);width:14px;height:2px;background:var(--accent);box-shadow:0 0 8px var(--glow);opacity:{{mo.underOp}}"></span></button>
+        <span style="width:3px;height:3px;border-radius:50%;background:var(--t-faint);display:{{mo.sepDisplay}}"></span>
+      </sc-for>
+    </nav>
+
+    <section style="position:relative;width:min(64vmin,460px);aspect-ratio:1/1">
+      <svg viewBox="0 0 440 440" aria-hidden="true" style="width:100%;height:100%;display:block">
+        {{ticksEl}}
+        <path d="M 101.2 338.8 A 168 168 0 1 1 338.8 338.8" pathLength="100" fill="none" stroke="var(--t-track)" stroke-width="6" stroke-linecap="round"></path>
+        <path d="M 101.2 338.8 A 168 168 0 1 1 338.8 338.8" pathLength="100" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" style="stroke-dasharray:100 100;stroke-dashoffset:{{arcOffset}};opacity:{{arcOp}};filter:drop-shadow(0 0 9px var(--glow));transition:stroke-dashoffset .25s linear,opacity .4s ease,stroke .5s ease"></path>
+        <circle r="11" cx="{{nx}}" cy="{{ny}}" fill="var(--accent)" opacity="0.16"></circle>
+        <circle r="5.5" cx="{{nx}}" cy="{{ny}}" fill="var(--accent)" style="filter:drop-shadow(0 0 7px var(--glow))"></circle>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;padding-top:6px">
+        <div style="font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:.34em;text-indent:.34em;color:var(--t-muted);margin-bottom:14px;min-height:11px">{{lapLine}}</div>
+        <div role="timer" style="display:flex;align-items:baseline;justify-content:center;font-weight:200;font-size:clamp(64px,15vmin,108px);line-height:1;color:{{timeColor}};font-variant-numeric:tabular-nums;transition:color .5s ease"><span>{{mm}}</span><span style="width:.34em;text-align:center;transform:translateY(-.06em)">:</span><span>{{ss}}</span></div>
+        <div style="margin-top:16px;font-family:'Michroma',sans-serif;font-size:9px;letter-spacing:.4em;text-indent:.4em;color:{{stateColor}};min-height:10px">{{stateLine}}</div>
+      </div>
+    </section>
+
+    <section style="display:flex;align-items:center;gap:34px;margin-top:-28px;position:relative;z-index:2">
+      <button onClick="{{reset}}" aria-label="Reset session" title="Reset (R)" style="width:46px;height:46px;border-radius:50%;background:transparent;border:1px solid var(--t-hair);color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s,transform .15s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair2)" style-active="transform:scale(.94)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+      </button>
+      <button onClick="{{toggleRun}}" aria-label="Start or pause" style="width:98px;height:98px;border-radius:50%;cursor:pointer;border:1.5px solid var(--accent);background:radial-gradient(circle at 50% 32%, var(--t-eng1), var(--t-eng2) 72%);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -8px 16px rgba(0,0,0,.55),0 0 0 6px rgba(255,255,255,.025),0 0 18px var(--glow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:box-shadow .35s ease,border-color .5s ease,transform .12s ease" style-hover="box-shadow:inset 0 1px 0 var(--t-hair),inset 0 -8px 16px rgba(0,0,0,.55),0 0 0 6px var(--t-shine),0 0 30px var(--glow)" style-active="transform:scale(.965)">
+        <span style="font-family:'Michroma',sans-serif;font-size:8px;letter-spacing:.3em;text-indent:.3em;color:var(--t-faint)">ENGINE</span>
+        <span style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:.26em;text-indent:.26em;color:var(--t-text)">{{startLabel}}</span>
+      </button>
+      <button onClick="{{skip}}" aria-label="Skip to next session" title="Skip (S)" style="width:46px;height:46px;border-radius:50%;background:transparent;border:1px solid var(--t-hair);color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s,transform .15s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair2)" style-active="transform:scale(.94)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+      </button>
+    </section>
+
+    <section style="margin-top:clamp(14px,2.4vh,24px);display:{{lapsDisplay}};flex-direction:column;align-items:center;gap:11px">
+      <div style="display:flex;gap:11px;align-items:flex-end">
+        <sc-for list="{{lapToms}}" as="lt" hint-placeholder-count="4">
+          <span style="width:15px;height:15px;display:block"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:100%;height:100%;display:block"><circle cx="12" cy="14.2" r="7.4" fill="{{lt.fill}}" stroke="{{lt.stroke}}" stroke-width="1.6" style="filter:{{lt.filt}};transition:fill .4s,stroke .4s"></circle><path d="M12 7 C10.6 5.4 8.6 5 7.2 5.9 C8.8 6.5 10 7.2 10.8 8.3 M12 7 C13.4 5.4 15.4 5 16.8 5.9 C15.2 6.5 14 7.2 13.2 8.3 M12 4.2 L12 7.6" fill="none" stroke="{{lt.leaf}}" stroke-width="1.5" stroke-linecap="round" style="transition:stroke .4s"></path></svg></span>
+        </sc-for>
+      </div>
+      <div style="font-family:'Michroma',sans-serif;font-size:8.5px;letter-spacing:.36em;text-indent:.36em;color:var(--t-faint)">{{todayLine}}</div>
+    </section>
+  </main>
+
+  <footer style="width:100%;display:{{chromeDisplay}};align-items:center;justify-content:center;gap:16px;padding:16px 20px 20px;border-top:1px solid var(--t-hair);font-family:'Michroma',sans-serif;font-size:8px;letter-spacing:.3em;text-indent:.3em;color:var(--t-faint);text-transform:uppercase"><span>Space · Start / Pause</span><span style="width:3px;height:3px;border-radius:50%;background:var(--t-faint)"></span><span>R · Reset</span><span style="width:3px;height:3px;border-radius:50%;background:var(--t-faint)"></span><span>S · Skip</span></footer>
+
+  <button onClick="{{toggleDock}}" aria-label="Undock widget" title="Undock" style="position:fixed;top:10px;right:10px;z-index:30;width:34px;height:34px;border-radius:50%;background:var(--t-btn);border:1px solid var(--t-hair);color:var(--t-muted);cursor:pointer;display:{{undockDisplay}};place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair2)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><line x1="12" y1="18" x2="12" y2="8"></line><polyline points="8 12 12 8 16 12"></polyline><line x1="5" y1="4" x2="19" y2="4"></line></svg>
+  </button>
+  <div onClick="{{closePanels}}" style="position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:{{scrimOp}};pointer-events:{{scrimPE}};transition:opacity .35s ease;z-index:40"></div>
+
+  <aside role="dialog" aria-modal="true" aria-label="Pit board" style="position:fixed;top:0;bottom:0;left:0;width:min(90vw,340px);background:var(--t-panel);z-index:50;padding:28px 26px;display:flex;flex-direction:column;border-right:1px solid var(--t-hair);transform:{{boardTf}};transition:transform .4s cubic-bezier(.32,.72,.28,1)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--t-hair)">
+      <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:.4em;text-indent:.4em;color:var(--t-text)">PIT BOARD</div>
+      <button onClick="{{closePanels}}" aria-label="Close pit board" style="width:32px;height:32px;border-radius:50%;background:none;border:1px solid transparent;color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:18px 0 14px;border-bottom:1px solid var(--t-hair)">
+      <input value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onDraftKey}}" maxLength="140" placeholder="Add to the board…" aria-label="New to-do" style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--t-hair);padding:7px 2px;font-weight:300;font-size:15.5px;color:var(--t-text);outline:none;transition:border-color .3s" style-focus="border-bottom-color:var(--accent)">
+      <button onClick="{{addTodo}}" aria-label="Add to-do" style="width:30px;height:30px;border-radius:50%;background:none;border:1px solid var(--t-hair);color:var(--t-muted);cursor:pointer;font-weight:300;font-size:19px;line-height:1;display:grid;place-items:center;transition:color .2s,border-color .2s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair2)">+</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;margin-right:-8px;padding-right:8px">
+      <sc-if value="{{noTodos}}" hint-placeholder-val="{{false}}"><div style="padding:26px 4px;font-weight:300;font-size:14px;line-height:1.6;color:var(--t-faint)">The board is clear. Add what the next stint is for.</div></sc-if>
+      <sc-for list="{{todos}}" as="td" hint-placeholder-count="0">
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--t-hair)">
+          <button onClick="{{td.toggle}}" aria-label="Toggle done" style="flex:none;width:18px;height:18px;border-radius:50%;background:{{td.checkBg}};border:1px solid {{td.checkBorder}};cursor:pointer;display:grid;place-items:center;box-shadow:{{td.checkShadow}};transition:background .25s,border-color .25s,box-shadow .25s;padding:0"><svg viewBox="0 0 12 12" fill="none" stroke="#0B0B0E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:9px;height:9px;opacity:{{td.tickOp}};transition:opacity .2s"><polyline points="2 6.5 4.8 9 10 3"></polyline></svg></button>
+          <span style="flex:1;font-weight:300;font-size:15.5px;line-height:1.4;color:{{td.textColor}};text-decoration:{{td.deco}};overflow-wrap:anywhere;transition:color .25s">{{td.text}}</span>
+          <button onClick="{{td.del}}" aria-label="Delete to-do" style="flex:none;width:26px;height:26px;border-radius:50%;background:none;border:none;color:var(--t-faint);cursor:pointer;display:grid;place-items:center;opacity:.35;transition:opacity .2s,color .2s;padding:0" style-hover="opacity:1;color:var(--t-text)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:11px;height:11px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{hasDone}}" hint-placeholder-val="{{false}}"><button onClick="{{clearDone}}" style="margin-top:14px;align-self:flex-start;background:none;border:none;cursor:pointer;font-family:'Michroma',sans-serif;font-size:8.5px;letter-spacing:.3em;text-indent:.3em;color:var(--t-faint);padding:8px 0;transition:color .25s" style-hover="color:var(--t-text)">CLEAR COMPLETED</button></sc-if>
+  </aside>
+
+  <aside role="dialog" aria-modal="true" aria-label="Telemetry" style="position:fixed;top:0;bottom:0;right:0;width:min(90vw,340px);background:var(--t-panel);z-index:50;padding:28px 26px;display:flex;flex-direction:column;border-left:1px solid var(--t-hair);transform:{{telemetryTf}};transition:transform .4s cubic-bezier(.32,.72,.28,1)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--t-hair)">
+      <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:.4em;text-indent:.4em;color:var(--t-text)">TELEMETRY</div>
+      <button onClick="{{closePanels}}" aria-label="Close telemetry" style="width:32px;height:32px;border-radius:50%;background:none;border:1px solid transparent;color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--t-hair)">
+      <div style="font-family:'Michroma',sans-serif;font-size:9.5px;letter-spacing:.26em;text-indent:.26em;color:var(--t-muted)">TODAY</div>
+      <span style="font-weight:300;font-size:17px;color:var(--t-text);font-variant-numeric:tabular-nums;letter-spacing:.04em">{{statToday}}</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--t-hair)">
+      <div style="font-family:'Michroma',sans-serif;font-size:9.5px;letter-spacing:.26em;text-indent:.26em;color:var(--t-muted)">THIS WEEK</div>
+      <span style="font-weight:300;font-size:17px;color:var(--t-text);font-variant-numeric:tabular-nums;letter-spacing:.04em">{{statWeek}}</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--t-hair)">
+      <div style="font-family:'Michroma',sans-serif;font-size:9.5px;letter-spacing:.26em;text-indent:.26em;color:var(--t-muted)">STREAK</div>
+      <span style="font-weight:300;font-size:17px;color:var(--t-text);font-variant-numeric:tabular-nums;letter-spacing:.04em">{{statStreak}}</span>
+    </div>
+    <div style="padding:20px 0 8px">
+      <div style="font-family:'Michroma',sans-serif;font-size:8.5px;letter-spacing:.3em;text-indent:.3em;color:var(--t-faint);margin-bottom:14px">LAST 7 DAYS · FOCUS MINUTES</div>
+      {{chartEl}}
+    </div>
+    <div style="margin-top:auto;padding-top:20px;display:flex;align-items:center;gap:8px;font-family:'Michroma',sans-serif;font-size:8px;letter-spacing:.28em;color:var(--t-faint)">
+      <span style="width:5px;height:5px;border-radius:50%;background:{{syncDotBg}};box-shadow:{{syncDotShadow}};flex:none"></span><span>{{syncText}}</span>
+    </div>
+  </aside>
+
+  <aside role="dialog" aria-modal="true" aria-label="Set-up" style="position:fixed;top:0;bottom:0;right:0;width:min(90vw,340px);background:var(--t-panel);z-index:50;padding:28px 26px;display:flex;flex-direction:column;border-left:1px solid var(--t-hair);transform:{{setupTf}};transition:transform .4s cubic-bezier(.32,.72,.28,1)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--t-hair)">
+      <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:.4em;text-indent:.4em;color:var(--t-text)">SET-UP</div>
+      <button onClick="{{closePanels}}" aria-label="Close set-up" style="width:32px;height:32px;border-radius:50%;background:none;border:1px solid transparent;color:var(--t-muted);cursor:pointer;display:grid;place-items:center;transition:color .25s,border-color .25s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <sc-for list="{{steppers}}" as="sp" hint-placeholder-count="4">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--t-hair)">
+        <div style="font-family:'Michroma',sans-serif;font-size:9.5px;letter-spacing:.26em;text-indent:.26em;color:var(--t-muted);display:flex;align-items:baseline;gap:8px">{{sp.label}}<span style="font-size:7.5px;color:var(--t-faint);letter-spacing:.26em">{{sp.unit}}</span></div>
+        <div style="display:flex;align-items:center;gap:2px">
+          <button onClick="{{sp.dec}}" aria-label="Decrease" style="width:28px;height:28px;border-radius:50%;background:none;border:1px solid var(--t-hair);color:var(--t-muted);cursor:pointer;font-weight:300;font-size:17px;line-height:1;display:grid;place-items:center;transition:color .2s,border-color .2s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair2)">–</button>
+          <span style="min-width:42px;text-align:center;font-weight:300;font-size:19px;color:var(--t-text);font-variant-numeric:tabular-nums">{{sp.val}}</span>
+          <button onClick="{{sp.inc}}" aria-label="Increase" style="width:28px;height:28px;border-radius:50%;background:none;border:1px solid var(--t-hair);color:var(--t-muted);cursor:pointer;font-weight:300;font-size:17px;line-height:1;display:grid;place-items:center;transition:color .2s,border-color .2s;padding:0" style-hover="color:var(--t-text);border-color:var(--t-hair2)">+</button>
+        </div>
+      </div>
+    </sc-for>
+    <sc-for list="{{switches}}" as="sw" hint-placeholder-count="2">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--t-hair)">
+        <div style="font-family:'Michroma',sans-serif;font-size:9.5px;letter-spacing:.26em;text-indent:.26em;color:var(--t-muted)">{{sw.label}}</div>
+        <button onClick="{{sw.toggle}}" role="switch" aria-checked="{{sw.on}}" style="position:relative;width:42px;height:23px;border-radius:12px;background:{{sw.bg}};border:1px solid {{sw.border}};cursor:pointer;box-shadow:{{sw.shadow}};transition:background .3s,border-color .3s,box-shadow .3s;padding:0"><span style="position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:{{sw.knobBg}};transform:{{sw.knobTf}};transition:transform .3s cubic-bezier(.32,.72,.28,1),background .3s"></span></button>
+      </div>
+    </sc-for>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid var(--t-hair)">
+      <div style="font-family:'Michroma',sans-serif;font-size:9.5px;letter-spacing:.26em;text-indent:.26em;color:var(--t-muted)">THEME</div>
+      <div style="display:flex;gap:6px">
+        <sc-for list="{{themes}}" as="th" hint-placeholder-count="3">
+          <button onClick="{{th.pick}}" style="background:none;border:1px solid {{th.border}};color:{{th.color}};border-radius:12px;padding:6px 10px;cursor:pointer;font-family:'Michroma',sans-serif;font-size:8px;letter-spacing:.2em;text-indent:.2em;transition:color .2s,border-color .2s" style-hover="color:var(--t-text)">{{th.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <p style="margin-top:auto;padding-top:20px;font-weight:300;font-size:13px;line-height:1.6;color:var(--t-faint)">Each focus session is a lap — one pomodoro. After the final lap of a set, the long break comes in, then a fresh set begins.</p>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accentFocus&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#FF2800&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#FF2800&quot;,&quot;#FF8A00&quot;,&quot;#4FA8FF&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;zenMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+class Component extends DCLogic {
+  state = {
+    mode:'focus', running:false, remaining:1500000, focusInCycle:0, panel:'board',
+    settings:{focus:25,short:5,long:15,laps:4,autoStart:false,sound:true,theme:'dark'},
+    todos:[], days:{}, draft:'', sync:'off', docked:false, narrow:false
+  };
+  endAt = 0;
+
+  componentDidMount(){
+    this.applyTheme();
+    this.onRes = ()=>this.setState({narrow: window.innerWidth < 760});
+    window.addEventListener('resize', this.onRes);
+    if(window.innerWidth < 760) this.setState({narrow:true, panel:null});
+    this.iv = setInterval(()=>{
+      if(this.state.running){
+        if(Date.now() >= this.endAt) this.complete();
+        else this.forceUpdate();
+      }
+    }, 200);
+    this.keyH = (e)=>{
+      if(e.target && e.target.closest && e.target.closest('button, input, textarea, select')) return;
+      if(e.code==='Space'){ e.preventDefault(); this.toggleRun(); }
+      else if(e.key==='r'||e.key==='R') this.reset();
+      else if(e.key==='s'||e.key==='S') this.skip();
+      else if(e.key==='Escape') this.setState({panel:null});
+    };
+    window.addEventListener('keydown', this.keyH);
+    this.load();
+  }
+  componentDidUpdate(){
+    this.applyTheme();
+    const ms = this.remainingNow();
+    const t = Math.ceil(ms/1000);
+    const names = {focus:'Focus', short:'Short break', long:'Long break'};
+    document.title = String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')+' · '+names[this.state.mode]+' — TEMPO';
+  }
+  componentWillUnmount(){
+    clearInterval(this.iv);
+    window.removeEventListener('keydown', this.keyH);
+    window.removeEventListener('resize', this.onRes);
+    if(this._auto) clearTimeout(this._auto);
+  }
+  applyTheme(){
+    document.documentElement.style.setProperty('--focus-accent', this.props.accentFocus || '#FF2800');
+    document.documentElement.setAttribute('data-mode', this.state.mode);
+    document.documentElement.setAttribute('data-theme', this.state.settings.theme || 'dark');
+  }
+
+  durMs(m){ return this.state.settings[m]*60000; }
+  remainingNow(){ return this.state.running ? Math.max(0, this.endAt - Date.now()) : this.state.remaining; }
+
+  startRun(){
+    this.clearAuto();
+    if(this.state.running) return;
+    let rem = this.state.remaining;
+    if(rem <= 0) rem = this.durMs(this.state.mode);
+    this.endAt = Date.now() + rem;
+    this.setState({running:true, remaining:rem});
+  }
+  pauseRun(){
+    if(!this.state.running) return;
+    this.setState({running:false, remaining:Math.max(0, this.endAt - Date.now())});
+  }
+  toggleRun(){ this.state.running ? this.pauseRun() : this.startRun(); }
+  reset(){ this.clearAuto(); this.setState({running:false, remaining:this.durMs(this.state.mode)}); }
+  skip(){ this.clearAuto(); this.advance(false); }
+  clearAuto(){ if(this._auto){ clearTimeout(this._auto); this._auto = null; } }
+
+  setMode(m){ this.clearAuto(); this.setState({mode:m, running:false, remaining:this.durMs(m)}); }
+
+  advance(countIt){
+    const s = this.state;
+    let next, fic = s.focusInCycle, days = s.days;
+    if(s.mode==='focus'){
+      if(countIt){
+        const k = this.dayKey();
+        days = {...s.days};
+        const e = {...(days[k] || {m:0, s:0})};
+        e.m += s.settings.focus; e.s += 1;
+        days[k] = e;
+      }
+      fic++;
+      next = fic >= s.settings.laps ? 'long' : 'short';
+    } else {
+      if(s.mode==='long') fic = 0;
+      next = 'focus';
+    }
+    this.setState({mode:next, focusInCycle:fic, days, running:false, remaining:this.durMs(next)}, ()=>this.saveSoon());
+    if(s.settings.autoStart){
+      this._auto = setTimeout(()=>{ this._auto = null; this.startRun(); }, 1400);
+    }
+  }
+  complete(){
+    this.chime(this.state.mode==='focus' ? 'focus' : 'break');
+    this.advance(true);
+  }
+
+  chime(kind){
+    if(!this.state.settings.sound) return;
+    try{
+      this.audioCtx = this.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if(this.audioCtx.state==='suspended') this.audioCtx.resume();
+      const now = this.audioCtx.currentTime;
+      const notes = kind==='focus' ? [659.25, 880] : [440, 659.25];
+      notes.forEach((f, i)=>{
+        const o = this.audioCtx.createOscillator(), g = this.audioCtx.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        const t = now + i*0.18;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.16, t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+1.0);
+        o.connect(g).connect(this.audioCtx.destination);
+        o.start(t); o.stop(t+1.05);
+      });
+    }catch(e){}
+  }
+
+  dayKey(d){
+    d = d || new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  shiftDays(n){ const d = new Date(); d.setDate(d.getDate()+n); return d; }
+
+  async load(){
+    try{
+      let raw = null;
+      if(window.storage){ const r = await window.storage.get('tempo-data'); raw = r && r.value; }
+      else if(window.localStorage){ raw = localStorage.getItem('tempo-data'); }
+      const st = {sync: window.storage ? 'cloud' : (window.localStorage ? 'local' : 'off')};
+      if(raw){
+        const p = JSON.parse(raw);
+        if(p && typeof p==='object'){
+          st.days = p.days || {};
+          st.todos = Array.isArray(p.todos) ? p.todos.slice(0,80) : [];
+          if(p.settings){
+            const s = {...this.state.settings};
+            for(const k of Object.keys(s)) if(k in p.settings) s[k] = p.settings[k];
+            const clamp = (v,a,b,f)=> (typeof v==='number' && isFinite(v)) ? Math.min(b, Math.max(a, Math.round(v))) : f;
+            s.focus = clamp(s.focus,5,90,25); s.short = clamp(s.short,1,30,5);
+            s.long = clamp(s.long,5,45,15); s.laps = clamp(s.laps,2,8,4);
+            s.autoStart = !!s.autoStart; s.sound = s.sound !== false;
+            s.theme = ['dark','light','sepia'].indexOf(s.theme) >= 0 ? s.theme : 'dark';
+            st.settings = s;
+          }
+        }
+      }
+      this.setState(st, ()=>{ if(!this.state.running) this.setState({remaining:this.durMs(this.state.mode)}); });
+    }catch(e){
+      this.setState({sync: window.storage ? 'cloud' : 'off'});
+    }
+  }
+  saveSoon(){
+    if(this._st) clearTimeout(this._st);
+    this._st = setTimeout(()=>this.save(), 400);
+  }
+  async save(){
+    try{
+      const payload = JSON.stringify({v:1, days:this.state.days, todos:this.state.todos, settings:this.state.settings});
+      if(window.storage){ const res = await window.storage.set('tempo-data', payload); this.setState({sync: res ? 'cloud' : 'off'}); }
+      else if(window.localStorage){ localStorage.setItem('tempo-data', payload); this.setState({sync:'local'}); }
+    }catch(e){ this.setState({sync:'off'}); }
+  }
+
+  addTodo(){
+    const text = this.state.draft.trim();
+    if(!text) return;
+    const todos = [{id:Date.now()+''+Math.floor(Math.random()*1e4), text, done:false}, ...this.state.todos].slice(0,80);
+    this.setState({todos, draft:''}, ()=>this.saveSoon());
+  }
+  toggleTodo(id){
+    this.setState({todos:this.state.todos.map(t=> t.id===id ? {...t, done:!t.done} : t)}, ()=>this.saveSoon());
+  }
+  delTodo(id){
+    this.setState({todos:this.state.todos.filter(t=>t.id!==id)}, ()=>this.saveSoon());
+  }
+
+  ticksEl(){
+    if(!this._ticks){
+      const lines = [];
+      for(let n=0; n<=54; n++){
+        const f = n/54, a = (135 + f*270)*Math.PI/180;
+        const major = n%5===0, len = major ? 13 : 7;
+        const red = f > 0.88;
+        lines.push(React.createElement('line', {
+          key:n,
+          x1:(220+Math.cos(a)*(207-len)).toFixed(2), y1:(220+Math.sin(a)*(207-len)).toFixed(2),
+          x2:(220+Math.cos(a)*207).toFixed(2), y2:(220+Math.sin(a)*207).toFixed(2),
+          stroke: red ? '#FF2800' : (major ? 'var(--t-tickmajor)' : 'var(--t-tick)'),
+          strokeWidth: major ? 2 : 1,
+          opacity: red ? 0.85 : 1
+        }));
+      }
+      this._ticks = React.createElement('g', null, lines);
+    }
+    return this._ticks;
+  }
+
+  chartEl(){
+    const W=288, H=150, padT=20, padB=20, n=7, gap=10, barW=(W-gap*(n+1))/n;
+    const vals=[], labels=[];
+    for(let i=n-1; i>=0; i--){
+      const d = this.shiftDays(-i);
+      vals.push((this.state.days[this.dayKey(d)]||{}).m || 0);
+      labels.push(['S','M','T','W','T','F','S'][d.getDay()]);
+    }
+    const max = Math.max(30, ...vals);
+    const kids = [React.createElement('line', {key:'bl', x1:0, y1:H-padB, x2:W, y2:H-padB, stroke:'var(--t-hair2)', strokeWidth:1})];
+    vals.forEach((v, idx)=>{
+      const x = gap + idx*(barW+gap);
+      const isToday = idx===n-1;
+      if(v > 0){
+        const h = Math.max(3, (v/max)*(H-padT-padB)), y = H-padB-h;
+        kids.push(React.createElement('rect', {key:'b'+idx, x, y, width:barW, height:h, rx:2.5, fill:'#FF2800', opacity:isToday?1:0.45, style:isToday?{filter:'drop-shadow(0 0 6px rgba(255,40,0,.45))'}:undefined}));
+        kids.push(React.createElement('text', {key:'v'+idx, x:x+barW/2, y:y-6, textAnchor:'middle', fill:'var(--t-muted)', style:{fontSize:11, fontWeight:300}}, String(v)));
+      } else {
+        kids.push(React.createElement('rect', {key:'b'+idx, x, y:H-padB-2, width:barW, height:2, rx:1, fill:'#FF2800', opacity:0.18}));
+      }
+      kids.push(React.createElement('text', {key:'d'+idx, x:x+barW/2, y:H-6, textAnchor:'middle', fill:'var(--t-faint)', style:{fontSize:8, fontFamily:"'Michroma',sans-serif", letterSpacing:'.1em'}}, labels[idx]));
+    });
+    return React.createElement('svg', {viewBox:'0 0 '+W+' '+H, style:{width:'100%', height:'auto', display:'block'}}, kids);
+  }
+
+  renderVals(){
+    const s = this.state, set = s.settings;
+    const ms = this.remainingNow(), total = this.durMs(s.mode);
+    const p = Math.min(1, Math.max(0, 1 - ms/total));
+    const a = (135 + p*270)*Math.PI/180;
+    const totalSec = Math.ceil(ms/1000);
+    const paused = !s.running && ms < total;
+    const modeNames = {focus:'FOCUS', short:'SHORT BREAK', long:'LONG BREAK'};
+    const modes = ['focus','short','long'].map((k, i)=>({
+      key:k, label:modeNames[k],
+      color: k===s.mode ? 'var(--t-text)' : 'var(--t-muted)',
+      underOp: k===s.mode ? 1 : 0,
+      sepDisplay: i===2 ? 'none' : 'block',
+      pick: ()=>this.setMode(k)
+    }));
+    const lapToms = [];
+    for(let i=0; i<set.laps; i++){
+      const done = i < s.focusInCycle, cur = s.mode==='focus' && i===s.focusInCycle;
+      lapToms.push({
+        fill: done ? '#FF3B24' : 'none',
+        stroke: (done||cur) ? '#FF3B24' : 'var(--t-faint)',
+        leaf: (done||cur) ? '#4F9457' : 'var(--t-faint)',
+        filt: done ? 'drop-shadow(0 0 5px rgba(255,59,36,.5))' : 'none'
+      });
+    }
+    const today = s.days[this.dayKey()] || {m:0, s:0};
+    let weekM=0, weekS=0;
+    for(let i=0; i<7; i++){
+      const e = s.days[this.dayKey(this.shiftDays(-i))];
+      if(e){ weekM += e.m; weekS += e.s; }
+    }
+    let streak = 0;
+    {
+      let i = ((s.days[this.dayKey()]||{}).s > 0) ? 0 : -1;
+      if(!(i===-1 && !((s.days[this.dayKey(this.shiftDays(-1))]||{}).s > 0))){
+        for(;; i--){
+          const e = s.days[this.dayKey(this.shiftDays(i))];
+          if(e && e.s > 0) streak++;
+          else break;
+        }
+      }
+    }
+    const steppers = [
+      {key:'focus', label:'FOCUS', unit:'MIN', step:5, min:5, max:90},
+      {key:'short', label:'SHORT BREAK', unit:'MIN', step:1, min:1, max:30},
+      {key:'long', label:'LONG BREAK', unit:'MIN', step:5, min:5, max:45},
+      {key:'laps', label:'LAPS PER SET', unit:'', step:1, min:2, max:8}
+    ].map(c=>({label:c.label, unit:c.unit, val:set[c.key], dec:()=>this.stepSetting(c,-1), inc:()=>this.stepSetting(c,1)}));
+    const switches = [
+      {key:'autoStart', label:'AUTO-START NEXT'},
+      {key:'sound', label:'SOUND'}
+    ].map(c=>{
+      const on = !!set[c.key];
+      return {
+        label:c.label, on,
+        bg: on ? 'var(--accent)' : 'var(--t-switch)',
+        border: on ? 'var(--accent)' : 'var(--t-hair)',
+        shadow: on ? '0 0 10px var(--glow)' : 'none',
+        knobBg: on ? '#0B0B0E' : 'var(--t-knob)',
+        knobTf: on ? 'translateX(19px)' : 'translateX(0)',
+        toggle: ()=>this.toggleSetting(c.key)
+      };
+    });
+    const todos = s.todos.map(t=>({
+      text:t.text,
+      checkBg: t.done ? '#FF3B24' : 'none',
+      checkBorder: t.done ? '#FF3B24' : 'var(--t-hair2)',
+      checkShadow: t.done ? '0 0 8px rgba(255,59,36,.4)' : 'none',
+      tickOp: t.done ? 1 : 0,
+      textColor: t.done ? 'var(--t-faint)' : 'var(--t-text)',
+      deco: t.done ? 'line-through' : 'none',
+      toggle: ()=>this.toggleTodo(t.id),
+      del: ()=>this.delTodo(t.id)
+    }));
+    const effPanel = s.docked ? null : s.panel;
+    const tf = (name, side)=> effPanel===name ? 'translateX(0)' : (side==='left' ? 'translateX(-103%)' : 'translateX(103%)');
+    const todayN = today.s || 0;
+    return {
+      ambientOp: s.running ? 1 : 0.55,
+      ambientAnim: s.running ? 'breathe 9s ease-in-out infinite' : 'none',
+      chromeDisplay: (this.props.zenMode || s.docked) ? 'none' : 'flex',
+      lapsDisplay: (this.props.zenMode || s.docked) ? 'none' : 'flex',
+      toggleDock: ()=>this.setState({docked:!this.state.docked}),
+      stagePad: (effPanel==='board' && !s.narrow) ? '340px' : '0px',
+      undockDisplay: s.docked ? 'grid' : 'none',
+      modes, ticksEl: this.ticksEl(),
+      arcOffset: (100 - p*100).toFixed(3),
+      arcOp: p <= 0.0005 ? 0 : 1,
+      nx: (220 + Math.cos(a)*168).toFixed(2),
+      ny: (220 + Math.sin(a)*168).toFixed(2),
+      lapLine: s.mode==='focus' ? 'LAP '+Math.min(s.focusInCycle+1, set.laps)+' · '+set.laps : 'PIT STOP',
+      mm: String(Math.floor(totalSec/60)).padStart(2,'0'),
+      ss: String(totalSec%60).padStart(2,'0'),
+      timeColor: (s.mode==='focus' && s.running && ms < 60000) ? 'var(--accent)' : 'var(--t-text)',
+      stateLine: s.running ? '' : (paused ? 'PAUSED' : 'READY'),
+      stateColor: paused ? 'var(--accent)' : 'var(--t-faint)',
+      startLabel: s.running ? 'PAUSE' : 'START',
+      toggleRun: ()=>this.toggleRun(),
+      reset: ()=>this.reset(),
+      skip: ()=>this.skip(),
+      lapToms,
+      todayLine: todayN+' POMODOR'+(todayN===1?'O':'I')+' TODAY',
+      openBoard: ()=>this.setState({panel:'board'}),
+      openTelemetry: ()=>this.setState({panel:'telemetry'}),
+      openSetup: ()=>this.setState({panel:'setup'}),
+      closePanels: ()=>this.setState({panel:null}),
+      scrimOp: (effPanel && effPanel !== 'board') ? 1 : 0,
+      scrimPE: (effPanel && effPanel !== 'board') ? 'auto' : 'none',
+      boardTf: tf('board','left'),
+      telemetryTf: tf('telemetry','right'),
+      setupTf: tf('setup','right'),
+      draft: s.draft,
+      onDraft: (e)=>this.setState({draft:e.target.value}),
+      onDraftKey: (e)=>{ if(e.key==='Enter') this.addTodo(); },
+      addTodo: ()=>this.addTodo(),
+      todos,
+      noTodos: s.todos.length===0,
+      hasDone: s.todos.some(t=>t.done),
+      clearDone: ()=>this.setState({todos:s.todos.filter(t=>!t.done)}, ()=>this.saveSoon()),
+      statToday: today.m+' min · '+today.s+' lap'+(today.s===1?'':'s'),
+      statWeek: weekM+' min · '+weekS+' lap'+(weekS===1?'':'s'),
+      statStreak: streak+' day'+(streak===1?'':'s'),
+      chartEl: this.chartEl(),
+      syncText: s.sync==='cloud' ? 'CLOUD · SYNCED' : (s.sync==='local' ? 'SAVED ON THIS DEVICE' : 'OFFLINE — SESSION ONLY'),
+      syncDotBg: s.sync==='off' ? 'var(--t-faint)' : '#4F9457',
+      syncDotShadow: s.sync==='off' ? 'none' : '0 0 6px rgba(79,148,87,.6)',
+      steppers, switches,
+      themes: ['dark','light','sepia'].map(k=>{
+        const cur = (set.theme || 'dark') === k;
+        return {label:k.toUpperCase(), border:cur ? 'var(--accent)' : 'var(--t-hair)', color:cur ? 'var(--t-text)' : 'var(--t-muted)', pick:()=>this.toggleSetting('theme', k)};
+      })
+    };
+  }
+
+  stepSetting(c, dir){
+    const set = {...this.state.settings};
+    set[c.key] = Math.min(c.max, Math.max(c.min, set[c.key] + c.step*dir));
+    const st = {settings:set};
+    if(c.key==='laps'){
+      st.focusInCycle = Math.min(this.state.focusInCycle, set.laps-1);
+    } else if(c.key===this.state.mode && !this.state.running){
+      st.remaining = set[c.key]*60000;
+    }
+    this.setState(st, ()=>this.saveSoon());
+  }
+  toggleSetting(k, val){
+    this.setState({settings:{...this.state.settings, [k]: val !== undefined ? val : !this.state.settings[k]}}, ()=>this.saveSoon());
+  }
+}
+</script>
+</body>
+</html>

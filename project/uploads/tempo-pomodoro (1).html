@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="focus">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TEMPO — Pomodoro GT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Titillium+Web:wght@200;300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#060607;
+    --panel:#0D0D10;
+    --hairline:rgba(255,255,255,.08);
+    --hairline-strong:rgba(255,255,255,.14);
+    --text:#E9EAEC;
+    --muted:#787D86;
+    --faint:#43474F;
+    --track:rgba(255,255,255,.055);
+    --redline:#FF2800;         /* rosso corsa — also the tomato */
+    --tomato:#FF3B24;
+    --leaf:#4F9457;
+    --display:'Michroma',sans-serif;
+    --body:'Titillium Web','Segoe UI',sans-serif;
+  }
+  :root[data-mode="focus"]{ --accent:#FF2800; --glow:rgba(255,40,0,.38); --ambient:rgba(255,40,0,.045); }
+  :root[data-mode="short"]{ --accent:#FFC400; --glow:rgba(255,196,0,.34); --ambient:rgba(255,196,0,.04); }
+  :root[data-mode="long"] { --accent:#9FC0DE; --glow:rgba(159,192,222,.34); --ambient:rgba(159,192,222,.04); }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(52vmin 52vmin at 50% 46%, rgba(255,255,255,.035), transparent 70%),
+      radial-gradient(80vmin 80vmin at 50% 46%, var(--ambient), transparent 72%);
+    opacity:.55;
+    transition:opacity 1.4s ease;
+    pointer-events:none;
+  }
+  body.running::before{ opacity:1; animation:breathe 9s ease-in-out infinite; }
+  @keyframes breathe{ 0%,100%{opacity:.8} 50%{opacity:1} }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    width:100%;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    padding:22px 28px 18px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .tomato-mark{ width:17px; height:17px; display:block; }
+  .wordmark{
+    font-family:var(--display);
+    font-size:15px; letter-spacing:.55em; text-indent:.55em;
+    color:var(--text);
+  }
+  .subline{
+    margin-top:1px;
+    font-family:var(--display);
+    font-size:7.5px; letter-spacing:.42em; text-indent:.42em;
+    color:var(--muted);
+  }
+  .topbar-left{ position:absolute; left:20px; top:50%; transform:translateY(-50%); }
+  .topbar-right{ position:absolute; right:20px; top:50%; transform:translateY(-50%); display:flex; gap:6px; }
+  .iconbtn{
+    width:38px; height:38px; border-radius:50%;
+    background:transparent; border:1px solid transparent;
+    color:var(--muted); cursor:pointer;
+    display:grid; place-items:center;
+    transition:color .25s, border-color .25s;
+  }
+  .iconbtn:hover{ color:var(--text); border-color:var(--hairline); }
+  .iconbtn svg{ width:15px; height:15px; }
+
+  /* ---------- stage ---------- */
+  .stage{
+    flex:1;
+    width:min(92vw, 620px);
+    display:flex; flex-direction:column; align-items:center;
+    padding-top:clamp(12px, 3vh, 30px);
+  }
+
+  .modes{
+    display:flex; align-items:center; gap:26px;
+    margin-bottom:clamp(6px, 1.8vh, 16px);
+  }
+  .mode{
+    background:none; border:none; cursor:pointer;
+    font-family:var(--display);
+    font-size:9px; letter-spacing:.24em; text-indent:.24em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:10px 2px 12px;
+    position:relative;
+    transition:color .25s;
+  }
+  .mode:hover{ color:var(--text); }
+  .mode.active{ color:var(--text); }
+  .mode.active::after{
+    content:""; position:absolute; left:50%; bottom:4px;
+    transform:translateX(-50%);
+    width:14px; height:2px; background:var(--accent);
+    box-shadow:0 0 8px var(--glow);
+  }
+  .mode-sep{ width:3px; height:3px; border-radius:50%; background:var(--faint); }
+
+  /* ---------- instrument ---------- */
+  .instrument{
+    position:relative;
+    width:min(64vmin, 460px);
+    aspect-ratio:1/1;
+  }
+  .instrument svg{ width:100%; height:100%; display:block; }
+
+  .tick{ stroke:rgba(255,255,255,.16); stroke-width:1; }
+  .tick.major{ stroke:rgba(255,255,255,.34); stroke-width:2; }
+  .tick.red{ stroke:var(--redline); opacity:.85; }
+  .track{ fill:none; stroke:var(--track); stroke-width:6; stroke-linecap:round; }
+  .arc{
+    fill:none; stroke:var(--accent); stroke-width:6; stroke-linecap:round;
+    stroke-dasharray:100 100;
+    filter:drop-shadow(0 0 9px var(--glow));
+    transition:stroke-dashoffset .25s linear, opacity .4s ease, stroke .5s ease;
+  }
+  .needle{ fill:var(--accent); filter:drop-shadow(0 0 7px var(--glow)); transition:fill .5s ease; }
+  .needle-halo{ fill:var(--accent); opacity:.16; transition:fill .5s ease; }
+
+  .readout{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    pointer-events:none;
+    padding-top:6px;
+  }
+  .eyebrow{
+    font-family:var(--display);
+    font-size:8.5px; letter-spacing:.34em; text-indent:.34em;
+    color:var(--muted);
+    margin-bottom:14px;
+    min-height:11px;
+    transition:color .4s;
+  }
+  .time{
+    display:flex; align-items:baseline; justify-content:center;
+    font-family:var(--body);
+    font-weight:200;
+    font-size:clamp(56px, 13.5vmin, 94px);
+    line-height:1;
+    color:var(--text);
+    font-variant-numeric:tabular-nums;
+    transition:color .5s ease;
+  }
+  .time.redzone{ color:var(--accent); }
+  .time .d{ width:.58em; text-align:center; }
+  .time .c{ width:.34em; text-align:center; transform:translateY(-.06em); }
+  .stateline{
+    margin-top:16px;
+    font-family:var(--display);
+    font-size:7.5px; letter-spacing:.4em; text-indent:.4em;
+    color:var(--faint);
+    min-height:10px;
+    transition:opacity .3s, color .3s;
+  }
+  .stateline.on-accent{ color:var(--accent); }
+
+  /* ---------- controls ---------- */
+  .controls{
+    display:flex; align-items:center; gap:34px;
+    margin-top:-28px;
+    position:relative; z-index:2;
+  }
+  .ghost{
+    width:46px; height:46px; border-radius:50%;
+    background:transparent;
+    border:1px solid var(--hairline);
+    color:var(--muted);
+    cursor:pointer;
+    display:grid; place-items:center;
+    transition:color .25s, border-color .25s, transform .15s;
+  }
+  .ghost:hover{ color:var(--text); border-color:var(--hairline-strong); }
+  .ghost:active{ transform:scale(.94); }
+  .ghost svg{ width:16px; height:16px; }
+
+  .engine{
+    width:98px; height:98px; border-radius:50%;
+    cursor:pointer;
+    border:1.5px solid var(--accent);
+    background:radial-gradient(circle at 50% 32%, #1B1B1F, #0B0B0E 72%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.07),
+      inset 0 -8px 16px rgba(0,0,0,.55),
+      0 0 0 6px rgba(255,255,255,.025),
+      0 0 18px var(--glow);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    transition:box-shadow .35s ease, border-color .5s ease, transform .12s ease;
+  }
+  .engine:hover{ box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      inset 0 -8px 16px rgba(0,0,0,.55),
+      0 0 0 6px rgba(255,255,255,.035),
+      0 0 30px var(--glow); }
+  .engine:active{ transform:scale(.965); }
+  .engine .e1{ font-family:var(--display); font-size:6.5px; letter-spacing:.3em; text-indent:.3em; color:var(--faint); }
+  .engine .e2{ font-family:var(--display); font-size:10px; letter-spacing:.26em; text-indent:.26em; color:var(--text); }
+
+  /* ---------- laps (tiny tomatoes) ---------- */
+  .laps{
+    margin-top:clamp(14px, 2.4vh, 24px);
+    display:flex; flex-direction:column; align-items:center; gap:11px;
+  }
+  .lap-dots{ display:flex; gap:11px; align-items:flex-end; }
+  .lap-tom{ width:15px; height:15px; display:block; }
+  .lap-tom .body{ fill:none; stroke:var(--faint); stroke-width:1.6; transition:fill .4s, stroke .4s, filter .4s; }
+  .lap-tom .leaf{ stroke:var(--faint); stroke-width:1.5; fill:none; stroke-linecap:round; transition:stroke .4s; }
+  .lap-tom.done .body{ fill:var(--tomato); stroke:var(--tomato); filter:drop-shadow(0 0 5px rgba(255,59,36,.5)); }
+  .lap-tom.done .leaf{ stroke:var(--leaf); }
+  .lap-tom.current .body{ stroke:var(--tomato); }
+  .lap-tom.current .leaf{ stroke:var(--leaf); }
+  .today{
+    font-family:var(--display);
+    font-size:7px; letter-spacing:.36em; text-indent:.36em;
+    color:var(--faint);
+  }
+
+  /* ---------- footer ---------- */
+  .footer{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:16px;
+    padding:16px 20px 20px;
+    border-top:1px solid var(--hairline);
+    font-family:var(--display);
+    font-size:6.5px; letter-spacing:.3em; text-indent:.3em;
+    color:var(--faint);
+    text-transform:uppercase;
+  }
+  .footer .sep{ width:3px; height:3px; border-radius:50%; background:var(--faint); }
+
+  /* ---------- panels ---------- */
+  .scrim{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.55);
+    opacity:0; pointer-events:none;
+    transition:opacity .35s ease;
+    z-index:40;
+  }
+  .scrim.open{ opacity:1; pointer-events:auto; }
+  .panel{
+    position:fixed; top:0; bottom:0;
+    width:min(90vw, 340px);
+    background:var(--panel);
+    z-index:50;
+    padding:28px 26px;
+    display:flex; flex-direction:column;
+    transition:transform .4s cubic-bezier(.32,.72,.28,1);
+  }
+  .panel.right{ right:0; border-left:1px solid var(--hairline); transform:translateX(103%); }
+  .panel.left{ left:0; border-right:1px solid var(--hairline); transform:translateX(-103%); }
+  .panel.open{ transform:translateX(0); }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .panel-title{
+    font-family:var(--display);
+    font-size:10px; letter-spacing:.4em; text-indent:.4em;
+    color:var(--text);
+  }
+  .close{
+    width:32px; height:32px; border-radius:50%;
+    background:none; border:1px solid transparent;
+    color:var(--muted); cursor:pointer;
+    display:grid; place-items:center;
+    transition:color .25s, border-color .25s;
+  }
+  .close:hover{ color:var(--text); border-color:var(--hairline); }
+  .close svg{ width:13px; height:13px; }
+
+  .row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 0;
+    border-bottom:1px solid var(--hairline);
+  }
+  .row-label{
+    font-family:var(--display);
+    font-size:8px; letter-spacing:.26em; text-indent:.26em;
+    color:var(--muted);
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .row-unit{ font-size:6px; color:var(--faint); letter-spacing:.26em; }
+
+  .stepper{ display:flex; align-items:center; gap:2px; }
+  .step{
+    width:28px; height:28px; border-radius:50%;
+    background:none; border:1px solid var(--hairline);
+    color:var(--muted); cursor:pointer;
+    font-family:var(--body); font-weight:300; font-size:15px; line-height:1;
+    display:grid; place-items:center;
+    transition:color .2s, border-color .2s;
+  }
+  .step:hover{ color:var(--text); border-color:var(--hairline-strong); }
+  .val{
+    min-width:42px; text-align:center;
+    font-family:var(--body); font-weight:300; font-size:17px;
+    color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .switch{
+    position:relative;
+    width:42px; height:23px; border-radius:12px;
+    background:rgba(255,255,255,.09);
+    border:1px solid var(--hairline);
+    cursor:pointer;
+    transition:background .3s, border-color .3s, box-shadow .3s;
+  }
+  .switch .knob{
+    position:absolute; top:2px; left:2px;
+    width:17px; height:17px; border-radius:50%;
+    background:#9A9EA6;
+    transition:transform .3s cubic-bezier(.32,.72,.28,1), background .3s;
+  }
+  .switch[aria-checked="true"]{
+    background:var(--accent);
+    border-color:var(--accent);
+    box-shadow:0 0 10px var(--glow);
+  }
+  .switch[aria-checked="true"] .knob{ transform:translateX(19px); background:#0B0B0E; }
+
+  .panel-note{
+    margin-top:auto; padding-top:20px;
+    font-family:var(--body); font-weight:300;
+    font-size:11.5px; line-height:1.6;
+    color:var(--faint);
+  }
+
+  /* ---------- pit board (to-dos) ---------- */
+  .todo-add{
+    display:flex; align-items:center; gap:10px;
+    padding:18px 0 14px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .todo-input{
+    flex:1;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--hairline);
+    padding:7px 2px;
+    font-family:var(--body); font-weight:300; font-size:14px;
+    color:var(--text);
+    outline:none;
+    transition:border-color .3s;
+  }
+  .todo-input::placeholder{ color:var(--faint); }
+  .todo-input:focus{ border-bottom-color:var(--accent); }
+  .todo-plus{
+    width:30px; height:30px; border-radius:50%;
+    background:none; border:1px solid var(--hairline);
+    color:var(--muted); cursor:pointer;
+    font-family:var(--body); font-weight:300; font-size:17px; line-height:1;
+    display:grid; place-items:center;
+    transition:color .2s, border-color .2s;
+  }
+  .todo-plus:hover{ color:var(--text); border-color:var(--hairline-strong); }
+
+  .todo-list{
+    flex:1;
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:var(--faint) transparent;
+    margin-right:-8px; padding-right:8px;
+  }
+  .todo{
+    display:flex; align-items:center; gap:12px;
+    padding:13px 0;
+    border-bottom:1px solid var(--hairline);
+  }
+  .todo-check{
+    flex:none;
+    width:18px; height:18px; border-radius:50%;
+    background:none;
+    border:1px solid var(--hairline-strong);
+    cursor:pointer;
+    display:grid; place-items:center;
+    transition:background .25s, border-color .25s, box-shadow .25s;
+  }
+  .todo-check svg{ width:9px; height:9px; opacity:0; transition:opacity .2s; }
+  .todo.done .todo-check{ background:var(--tomato); border-color:var(--tomato); box-shadow:0 0 8px rgba(255,59,36,.4); }
+  .todo.done .todo-check svg{ opacity:1; }
+  .todo-text{
+    flex:1;
+    font-family:var(--body); font-weight:300; font-size:14px; line-height:1.4;
+    color:var(--text);
+    overflow-wrap:anywhere;
+    transition:color .25s;
+  }
+  .todo.done .todo-text{ color:var(--faint); text-decoration:line-through; }
+  .todo-del{
+    flex:none;
+    width:26px; height:26px; border-radius:50%;
+    background:none; border:none;
+    color:var(--faint); cursor:pointer;
+    display:grid; place-items:center;
+    opacity:0;
+    transition:opacity .2s, color .2s;
+  }
+  .todo:hover .todo-del{ opacity:1; }
+  .todo-del:hover{ color:var(--text); }
+  .todo-del svg{ width:11px; height:11px; }
+  .todo-empty{
+    padding:26px 4px;
+    font-family:var(--body); font-weight:300; font-size:12.5px; line-height:1.6;
+    color:var(--faint);
+  }
+  .clear-done{
+    margin-top:14px;
+    align-self:flex-start;
+    background:none; border:none; cursor:pointer;
+    font-family:var(--display);
+    font-size:7px; letter-spacing:.3em; text-indent:.3em;
+    color:var(--faint);
+    padding:8px 0;
+    transition:color .25s;
+  }
+  .clear-done:hover{ color:var(--text); }
+  .clear-done[hidden]{ display:none; }
+
+  /* ---------- telemetry ---------- */
+  .stat-val{
+    font-family:var(--body); font-weight:300; font-size:15px;
+    color:var(--text);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.04em;
+  }
+  .chart-block{ padding:20px 0 8px; }
+  .chart-title{
+    font-family:var(--display);
+    font-size:7px; letter-spacing:.3em; text-indent:.3em;
+    color:var(--faint);
+    margin-bottom:14px;
+  }
+  .chart-block svg{ width:100%; height:auto; display:block; }
+  .bar{ fill:var(--redline); opacity:.45; transition:opacity .25s; }
+  .bar.today{ opacity:1; filter:drop-shadow(0 0 6px rgba(255,40,0,.45)); }
+  .bar:hover{ opacity:.85; }
+  .bar-val{ fill:var(--muted); font-family:var(--body); font-weight:300; font-size:9.5px; }
+  .bar-day{ fill:var(--faint); font-family:var(--display); font-size:6.5px; letter-spacing:.1em; }
+  .baseline{ stroke:var(--hairline-strong); stroke-width:1; }
+  .sync-note{
+    margin-top:auto; padding-top:20px;
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--display);
+    font-size:6.5px; letter-spacing:.28em; text-indent:0;
+    color:var(--faint);
+  }
+  .sync-dot{ width:5px; height:5px; border-radius:50%; background:var(--faint); flex:none; }
+  .sync-note.on .sync-dot{ background:var(--leaf); box-shadow:0 0 6px rgba(79,148,87,.6); }
+
+  button:focus-visible{ outline:1px solid var(--accent); outline-offset:3px; }
+
+  @media (max-width:430px){
+    .controls{ gap:22px; }
+    .modes{ gap:14px; }
+    .subline{ display:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button id="boardBtn" class="iconbtn" aria-label="Open pit board (to-dos)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/>
+          <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="brand">
+      <svg class="tomato-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="14.2" r="7.6" fill="none" stroke="var(--tomato)" stroke-width="1.6"/>
+        <path d="M12 6.6 C10.4 4.9 8 4.4 6.3 5.5 C8.2 6.2 9.6 7 10.5 8.2 M12 6.6 C13.6 4.9 16 4.4 17.7 5.5 C15.8 6.2 14.4 7 13.5 8.2 M12 3.4 L12 7.2"
+              fill="none" stroke="var(--leaf)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="wordmark">TEMPO</div>
+        <div class="subline">POMODORO&nbsp;GT</div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button id="telemetryBtn" class="iconbtn" aria-label="Open telemetry (statistics)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </button>
+      <button id="gearBtn" class="iconbtn" aria-label="Open set-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+          <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+          <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
+          <line x1="17" y1="16" x2="23" y2="16"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <nav class="modes" aria-label="Session type">
+      <button class="mode active" data-mode-btn="focus">Focus</button>
+      <span class="mode-sep"></span>
+      <button class="mode" data-mode-btn="short">Short break</button>
+      <span class="mode-sep"></span>
+      <button class="mode" data-mode-btn="long">Long break</button>
+    </nav>
+
+    <section class="instrument">
+      <svg viewBox="0 0 440 440" aria-hidden="true">
+        <g id="ticks"></g>
+        <path class="track" d="M 101.2 338.8 A 168 168 0 1 1 338.8 338.8" pathLength="100"/>
+        <path id="arc" class="arc" d="M 101.2 338.8 A 168 168 0 1 1 338.8 338.8" pathLength="100"/>
+        <circle id="needleHalo" class="needle-halo" r="11" cx="101.2" cy="338.8"/>
+        <circle id="needle" class="needle" r="5.5" cx="101.2" cy="338.8"/>
+      </svg>
+      <div class="readout">
+        <div id="lapLine" class="eyebrow">LAP 1 · 4</div>
+        <div id="time" class="time" role="timer" aria-live="off"></div>
+        <div id="stateLine" class="stateline">READY</div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <button id="resetBtn" class="ghost" aria-label="Reset session" title="Reset (R)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+      </button>
+      <button id="startBtn" class="engine" aria-label="Start or pause">
+        <span class="e1">ENGINE</span>
+        <span id="startLabel" class="e2">START</span>
+      </button>
+      <button id="skipBtn" class="ghost" aria-label="Skip to next session" title="Skip (S)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 4 15 12 5 20 5 4"/>
+          <line x1="19" y1="5" x2="19" y2="19"/>
+        </svg>
+      </button>
+    </section>
+
+    <section class="laps">
+      <div id="lapDots" class="lap-dots"></div>
+      <div id="todayLine" class="today">0 POMODORI TODAY</div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <span>Space&nbsp;·&nbsp;Start / Pause</span>
+    <span class="sep"></span>
+    <span>R&nbsp;·&nbsp;Reset</span>
+    <span class="sep"></span>
+    <span>S&nbsp;·&nbsp;Skip</span>
+  </footer>
+
+  <div id="scrim" class="scrim"></div>
+
+  <!-- PIT BOARD — to-do scratch pad -->
+  <aside id="boardPanel" class="panel left" role="dialog" aria-modal="true" aria-label="Pit board">
+    <div class="panel-head">
+      <div class="panel-title">PIT BOARD</div>
+      <button class="close" data-close aria-label="Close pit board">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="todo-add">
+      <input id="todoInput" class="todo-input" type="text" maxlength="140" placeholder="Add to the board…" aria-label="New to-do">
+      <button id="todoPlus" class="todo-plus" aria-label="Add to-do">+</button>
+    </div>
+    <div id="todoList" class="todo-list"></div>
+    <button id="clearDone" class="clear-done" hidden>CLEAR COMPLETED</button>
+  </aside>
+
+  <!-- TELEMETRY — statistics -->
+  <aside id="telemetryPanel" class="panel right" role="dialog" aria-modal="true" aria-label="Telemetry">
+    <div class="panel-head">
+      <div class="panel-title">TELEMETRY</div>
+      <button class="close" data-close aria-label="Close telemetry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="row">
+      <div class="row-label">TODAY</div>
+      <span id="statToday" class="stat-val">—</span>
+    </div>
+    <div class="row">
+      <div class="row-label">THIS WEEK</div>
+      <span id="statWeek" class="stat-val">—</span>
+    </div>
+    <div class="row">
+      <div class="row-label">STREAK</div>
+      <span id="statStreak" class="stat-val">—</span>
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">LAST 7 DAYS · FOCUS MINUTES</div>
+      <div id="chart"></div>
+    </div>
+    <div id="syncNote" class="sync-note">
+      <span class="sync-dot"></span><span id="syncText">CLOUD · CONNECTING…</span>
+    </div>
+  </aside>
+
+  <!-- SET-UP — settings -->
+  <aside id="setupPanel" class="panel right" role="dialog" aria-modal="true" aria-label="Set-up">
+    <div class="panel-head">
+      <div class="panel-title">SET-UP</div>
+      <button class="close" data-close aria-label="Close set-up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="row">
+      <div class="row-label">FOCUS <span class="row-unit">MIN</span></div>
+      <div class="stepper" data-key="focus" data-step="5" data-min="5" data-max="90">
+        <button class="step" data-dir="-1" aria-label="Decrease focus duration">–</button>
+        <span class="val">25</span>
+        <button class="step" data-dir="1" aria-label="Increase focus duration">+</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-label">SHORT BREAK <span class="row-unit">MIN</span></div>
+      <div class="stepper" data-key="short" data-step="1" data-min="1" data-max="30">
+        <button class="step" data-dir="-1" aria-label="Decrease short break duration">–</button>
+        <span class="val">5</span>
+        <button class="step" data-dir="1" aria-label="Increase short break duration">+</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-label">LONG BREAK <span class="row-unit">MIN</span></div>
+      <div class="stepper" data-key="long" data-step="5" data-min="5" data-max="45">
+        <button class="step" data-dir="-1" aria-label="Decrease long break duration">–</button>
+        <span class="val">15</span>
+        <button class="step" data-dir="1" aria-label="Increase long break duration">+</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-label">LAPS PER SET</div>
+      <div class="stepper" data-key="laps" data-step="1" data-min="2" data-max="8">
+        <button class="step" data-dir="-1" aria-label="Decrease laps per set">–</button>
+        <span class="val">4</span>
+        <button class="step" data-dir="1" aria-label="Increase laps per set">+</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-label">AUTO-START NEXT</div>
+      <button class="switch" data-toggle="autoStart" role="switch" aria-checked="false" aria-label="Auto-start next session">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="row">
+      <div class="row-label">SOUND</div>
+      <button class="switch" data-toggle="sound" role="switch" aria-checked="true" aria-label="Completion sound">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <p class="panel-note">Each focus session is a lap — one pomodoro. After the final lap of a set, the long break comes in, then a fresh set begins.</p>
+  </aside>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ==================== data & cloud storage ==================== */
+  const DEFAULTS = { focus:25, short:5, long:15, laps:4, autoStart:false, sound:true };
+  const settings = Object.assign({}, DEFAULTS);
+  let db = { v:1, days:{}, todos:[] };   // days: { 'YYYY-MM-DD': {m:minutes, s:sessions} }
+  let cloudOk = false;
+  let saveTimer = null;
+
+  const hasCloud = () => typeof window.storage !== 'undefined' && window.storage;
+
+  async function loadData(){
+    if(!hasCloud()){ setSync(false); return; }
+    try{
+      const r = await window.storage.get('tempo-data');
+      if(r && r.value){
+        const parsed = JSON.parse(r.value);
+        if(parsed && typeof parsed === 'object'){
+          db.days  = parsed.days  || {};
+          db.todos = Array.isArray(parsed.todos) ? parsed.todos.slice(0,80) : [];
+          if(parsed.settings){
+            for(const k of Object.keys(DEFAULTS)){
+              if(k in parsed.settings) settings[k] = parsed.settings[k];
+            }
+            sanitizeSettings();
+          }
+        }
+      }
+      cloudOk = true; setSync(true);
+    }catch(e){
+      // key not found on first run is fine — cloud is still available
+      cloudOk = true; setSync(true);
+    }
+    applySettingsToUI();
+    if(!state.running) state.remaining = durMs(state.mode);
+    renderTodos();
+    render();
+  }
+
+  function saveSoon(){
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveData, 400);
+  }
+  async function saveData(){
+    if(!hasCloud()){ setSync(false); return; }
+    try{
+      const payload = JSON.stringify({ v:1, days:db.days, todos:db.todos, settings });
+      const res = await window.storage.set('tempo-data', payload);
+      cloudOk = !!res; setSync(cloudOk);
+    }catch(e){
+      cloudOk = false; setSync(false);
+    }
+  }
+
+  function sanitizeSettings(){
+    const clamp=(v,a,b,f)=> (typeof v==='number' && isFinite(v)) ? Math.min(b,Math.max(a,Math.round(v))) : f;
+    settings.focus = clamp(settings.focus,5,90,25);
+    settings.short = clamp(settings.short,1,30,5);
+    settings.long  = clamp(settings.long,5,45,15);
+    settings.laps  = clamp(settings.laps,2,8,4);
+    settings.autoStart = !!settings.autoStart;
+    settings.sound = settings.sound !== false;
+  }
+
+  function setSync(on){
+    const note=document.getElementById('syncNote');
+    const txt=document.getElementById('syncText');
+    note.classList.toggle('on', on);
+    txt.textContent = on ? 'CLOUD · SYNCED' : 'CLOUD · OFFLINE — SESSION ONLY';
+  }
+
+  /* date helpers */
+  function dayKey(d){
+    d = d || new Date();
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dd}`;
+  }
+  function shiftDays(n){
+    const d=new Date(); d.setDate(d.getDate()+n); return d;
+  }
+
+  function recordPomodoro(minutes){
+    const k=dayKey();
+    const e=db.days[k] || {m:0,s:0};
+    e.m += minutes; e.s += 1;
+    db.days[k]=e;
+    saveSoon();
+  }
+
+  /* ==================== timer state ==================== */
+  const state = {
+    mode:'focus',
+    running:false,
+    endAt:0,
+    remaining:settings.focus*60000,
+    focusInCycle:0
+  };
+  let autoTimer=null;
+  let audioCtx=null;
+
+  /* ==================== dial ==================== */
+  const CX=220, CY=220, R_ARC=168, R_OUT=207, START=135, SWEEP=270;
+  const rad=d=>d*Math.PI/180;
+
+  (function buildTicks(){
+    const g=document.getElementById('ticks');
+    const N=54;
+    let html='';
+    for(let n=0;n<=N;n++){
+      const f=n/N, a=rad(START+f*SWEEP);
+      const major=n%5===0, len=major?13:7;
+      const x1=CX+Math.cos(a)*(R_OUT-len), y1=CY+Math.sin(a)*(R_OUT-len);
+      const x2=CX+Math.cos(a)*R_OUT,       y2=CY+Math.sin(a)*R_OUT;
+      const red=f>0.88;
+      html+=`<line class="tick${major?' major':''}${red?' red':''}" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+    }
+    g.innerHTML=html;
+  })();
+
+  /* ==================== elements ==================== */
+  const arc=document.getElementById('arc');
+  const needle=document.getElementById('needle');
+  const needleHalo=document.getElementById('needleHalo');
+  const timeEl=document.getElementById('time');
+  const lapLine=document.getElementById('lapLine');
+  const stateLine=document.getElementById('stateLine');
+  const startLabel=document.getElementById('startLabel');
+  const lapDots=document.getElementById('lapDots');
+  const todayLine=document.getElementById('todayLine');
+
+  const cells=[];
+  'dd:dd'.split('').forEach(ch=>{
+    const s=document.createElement('span');
+    s.className = ch===':' ? 'c' : 'd';
+    s.textContent = ch===':' ? ':' : '0';
+    timeEl.appendChild(s);
+    if(ch!==':') cells.push(s);
+  });
+
+  /* ==================== helpers ==================== */
+  const durMs=m=>settings[m]*60000;
+  const modeName={focus:'Focus', short:'Short break', long:'Long break'};
+
+  function remainingNow(){
+    return state.running ? Math.max(0, state.endAt-Date.now()) : state.remaining;
+  }
+  function setDigits(ms){
+    const total=Math.ceil(ms/1000);
+    const mm=Math.floor(total/60), ss=total%60;
+    const str=String(mm).padStart(2,'0')+String(ss).padStart(2,'0');
+    for(let i=0;i<4;i++) cells[i].textContent=str[i];
+    return String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+  }
+  function chime(kind){
+    if(!settings.sound) return;
+    try{
+      audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state==='suspended') audioCtx.resume();
+      const now=audioCtx.currentTime;
+      const notes = kind==='focus' ? [659.25,880] : [440,659.25];
+      notes.forEach((f,i)=>{
+        const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.type='sine'; o.frequency.value=f;
+        const t=now+i*0.18;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.16,t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+1.0);
+        o.connect(g).connect(audioCtx.destination);
+        o.start(t); o.stop(t+1.05);
+      });
+    }catch(e){}
+  }
+
+  /* ==================== render ==================== */
+  const TOMATO_SVG = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle class="body" cx="12" cy="14.2" r="7.4"/>
+      <path class="leaf" d="M12 7 C10.6 5.4 8.6 5 7.2 5.9 C8.8 6.5 10 7.2 10.8 8.3 M12 7 C13.4 5.4 15.4 5 16.8 5.9 C15.2 6.5 14 7.2 13.2 8.3 M12 4.2 L12 7.6"/>
+    </svg>`;
+
+  function render(){
+    const ms=remainingNow();
+    const total=durMs(state.mode);
+    const p=Math.min(1, Math.max(0, 1-ms/total));
+
+    arc.style.strokeDashoffset=(100-p*100).toFixed(3);
+    arc.style.opacity = p<=0.0005 ? 0 : 1;
+    const a=rad(START+p*SWEEP);
+    const nx=(CX+Math.cos(a)*R_ARC).toFixed(2), ny=(CY+Math.sin(a)*R_ARC).toFixed(2);
+    needle.setAttribute('cx',nx); needle.setAttribute('cy',ny);
+    needleHalo.setAttribute('cx',nx); needleHalo.setAttribute('cy',ny);
+
+    const t=setDigits(ms);
+    timeEl.classList.toggle('redzone', state.mode==='focus' && state.running && ms<60000);
+
+    lapLine.textContent = state.mode==='focus'
+      ? `LAP ${Math.min(state.focusInCycle+1, settings.laps)} · ${settings.laps}`
+      : 'PIT STOP';
+
+    if(state.running){ stateLine.textContent=''; stateLine.classList.remove('on-accent'); }
+    else if(ms<total){ stateLine.textContent='PAUSED'; stateLine.classList.add('on-accent'); }
+    else{ stateLine.textContent='READY'; stateLine.classList.remove('on-accent'); }
+
+    startLabel.textContent = state.running ? 'PAUSE' : 'START';
+    document.body.classList.toggle('running', state.running);
+    document.title = `${t} · ${modeName[state.mode]} — TEMPO`;
+
+    renderLaps();
+  }
+
+  function renderLaps(){
+    if(lapDots.children.length!==settings.laps){
+      lapDots.innerHTML='';
+      for(let i=0;i<settings.laps;i++){
+        const w=document.createElement('span');
+        w.className='lap-tom';
+        w.innerHTML=TOMATO_SVG;
+        lapDots.appendChild(w);
+      }
+    }
+    [...lapDots.children].forEach((d,i)=>{
+      d.classList.toggle('done', i<state.focusInCycle);
+      d.classList.toggle('current', state.mode==='focus' && i===state.focusInCycle);
+    });
+    const n=(db.days[dayKey()]||{}).s||0;
+    todayLine.textContent = `${n} POMODOR${n===1?'O':'I'} TODAY`;
+  }
+
+  /* ==================== timer engine ==================== */
+  function start(){
+    clearAuto();
+    if(state.running) return;
+    if(state.remaining<=0) state.remaining=durMs(state.mode);
+    state.endAt=Date.now()+state.remaining;
+    state.running=true;
+    if(settings.sound && !audioCtx){
+      try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+    }
+    render();
+  }
+  function pause(){
+    if(!state.running) return;
+    state.remaining=Math.max(0,state.endAt-Date.now());
+    state.running=false;
+    render();
+  }
+  function toggle(){ state.running ? pause() : start(); }
+  function reset(){
+    clearAuto();
+    state.running=false;
+    state.remaining=durMs(state.mode);
+    render();
+  }
+  function clearAuto(){ if(autoTimer){ clearTimeout(autoTimer); autoTimer=null; } }
+
+  function setMode(m){
+    clearAuto();
+    state.mode=m;
+    state.running=false;
+    state.remaining=durMs(m);
+    document.documentElement.setAttribute('data-mode',m);
+    document.querySelectorAll('[data-mode-btn]').forEach(b=>{
+      b.classList.toggle('active', b.dataset.modeBtn===m);
+    });
+    render();
+  }
+
+  function advance(countIt){
+    let next;
+    if(state.mode==='focus'){
+      if(countIt) recordPomodoro(settings.focus);
+      state.focusInCycle++;
+      next = state.focusInCycle>=settings.laps ? 'long' : 'short';
+    }else{
+      if(state.mode==='long') state.focusInCycle=0;
+      next='focus';
+    }
+    setMode(next);
+    renderTelemetry();
+    if(settings.autoStart){
+      autoTimer=setTimeout(()=>{ autoTimer=null; start(); },1400);
+    }
+  }
+
+  function complete(){
+    const finished=state.mode;
+    state.running=false;
+    state.remaining=0;
+    chime(finished==='focus'?'focus':'break');
+    advance(true);
+  }
+  function skip(){
+    clearAuto();
+    state.running=false;
+    advance(false);
+  }
+
+  setInterval(()=>{
+    if(state.running && Date.now()>=state.endAt) complete();
+    else if(state.running) render();
+  },200);
+
+  /* ==================== pit board (to-dos) ==================== */
+  const todoList=document.getElementById('todoList');
+  const todoInput=document.getElementById('todoInput');
+  const clearDoneBtn=document.getElementById('clearDone');
+
+  function addTodo(){
+    const text=todoInput.value.trim();
+    if(!text) return;
+    db.todos.unshift({ id:Date.now()+''+Math.floor(Math.random()*1e4), text, done:false });
+    if(db.todos.length>80) db.todos.length=80;
+    todoInput.value='';
+    renderTodos();
+    saveSoon();
+  }
+  function renderTodos(){
+    todoList.innerHTML='';
+    if(db.todos.length===0){
+      const e=document.createElement('div');
+      e.className='todo-empty';
+      e.textContent='The board is clear. Add what the next stint is for.';
+      todoList.appendChild(e);
+    }else{
+      db.todos.forEach(td=>{
+        const row=document.createElement('div');
+        row.className='todo'+(td.done?' done':'');
+        row.innerHTML=`
+          <button class="todo-check" aria-label="${td.done?'Mark as not done':'Mark as done'}">
+            <svg viewBox="0 0 12 12" fill="none" stroke="#0B0B0E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2 6.5 4.8 9 10 3"/>
+            </svg>
+          </button>
+          <span class="todo-text"></span>
+          <button class="todo-del" aria-label="Delete to-do">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>`;
+        row.querySelector('.todo-text').textContent=td.text;
+        row.querySelector('.todo-check').addEventListener('click',()=>{
+          td.done=!td.done; renderTodos(); saveSoon();
+        });
+        row.querySelector('.todo-del').addEventListener('click',()=>{
+          db.todos=db.todos.filter(x=>x.id!==td.id); renderTodos(); saveSoon();
+        });
+        todoList.appendChild(row);
+      });
+    }
+    clearDoneBtn.hidden = !db.todos.some(t=>t.done);
+  }
+  todoInput.addEventListener('keydown',e=>{ if(e.key==='Enter') addTodo(); });
+  document.getElementById('todoPlus').addEventListener('click',addTodo);
+  clearDoneBtn.addEventListener('click',()=>{
+    db.todos=db.todos.filter(t=>!t.done);
+    renderTodos(); saveSoon();
+  });
+
+  /* ==================== telemetry ==================== */
+  function renderTelemetry(){
+    const today=db.days[dayKey()]||{m:0,s:0};
+    document.getElementById('statToday').textContent=`${today.m} min · ${today.s} lap${today.s===1?'':'s'}`;
+
+    let weekM=0, weekS=0;
+    for(let i=0;i<7;i++){
+      const e=db.days[dayKey(shiftDays(-i))];
+      if(e){ weekM+=e.m; weekS+=e.s; }
+    }
+    document.getElementById('statWeek').textContent=`${weekM} min · ${weekS} lap${weekS===1?'':'s'}`;
+
+    let streak=0, i=((db.days[dayKey()]||{}).s>0)?0:-1;
+    if(i===-1 && !((db.days[dayKey(shiftDays(-1))]||{}).s>0)) streak=0;
+    else{
+      for(;;i--){
+        const e=db.days[dayKey(shiftDays(i))];
+        if(e && e.s>0) streak++;
+        else break;
+      }
+    }
+    document.getElementById('statStreak').textContent=`${streak} day${streak===1?'':'s'}`;
+
+    buildChart();
+  }
+
+  function buildChart(){
+    const W=288, H=150, padT=20, padB=20, n=7;
+    const gap=10, barW=(W-gap*(n+1))/n;
+    const vals=[], labels=[];
+    for(let i=n-1;i>=0;i--){
+      const d=shiftDays(-i);
+      vals.push((db.days[dayKey(d)]||{}).m||0);
+      labels.push(['S','M','T','W','T','F','S'][d.getDay()]);
+    }
+    const max=Math.max(30, ...vals);
+    let svg=`<svg viewBox="0 0 ${W} ${H}">`;
+    svg+=`<line class="baseline" x1="0" y1="${H-padB}" x2="${W}" y2="${H-padB}"/>`;
+    vals.forEach((v,idx)=>{
+      const x=gap+idx*(barW+gap);
+      const h=v>0 ? Math.max(3,(v/max)*(H-padT-padB)) : 0;
+      const y=H-padB-h;
+      const isToday=idx===n-1;
+      if(v>0){
+        svg+=`<rect class="bar${isToday?' today':''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="2.5"><title>${v} focus minutes</title></rect>`;
+        svg+=`<text class="bar-val" x="${(x+barW/2).toFixed(1)}" y="${(y-6).toFixed(1)}" text-anchor="middle">${v}</text>`;
+      }else{
+        svg+=`<rect class="bar" x="${x.toFixed(1)}" y="${H-padB-2}" width="${barW.toFixed(1)}" height="2" rx="1" opacity="0.18"/>`;
+      }
+      svg+=`<text class="bar-day" x="${(x+barW/2).toFixed(1)}" y="${H-6}" text-anchor="middle">${labels[idx]}</text>`;
+    });
+    svg+='</svg>';
+    document.getElementById('chart').innerHTML=svg;
+  }
+
+  /* ==================== panels ==================== */
+  const panels={
+    board:document.getElementById('boardPanel'),
+    telemetry:document.getElementById('telemetryPanel'),
+    setup:document.getElementById('setupPanel')
+  };
+  const scrim=document.getElementById('scrim');
+  function openPanel(name){
+    Object.entries(panels).forEach(([k,p])=>p.classList.toggle('open', k===name));
+    scrim.classList.add('open');
+    if(name==='telemetry') renderTelemetry();
+    if(name==='board') setTimeout(()=>todoInput.focus(),380);
+  }
+  function closePanels(){
+    Object.values(panels).forEach(p=>p.classList.remove('open'));
+    scrim.classList.remove('open');
+  }
+  document.getElementById('boardBtn').addEventListener('click',()=>openPanel('board'));
+  document.getElementById('telemetryBtn').addEventListener('click',()=>openPanel('telemetry'));
+  document.getElementById('gearBtn').addEventListener('click',()=>openPanel('setup'));
+  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closePanels));
+  scrim.addEventListener('click',closePanels);
+
+  /* ==================== settings wiring ==================== */
+  function applySettingsToUI(){
+    document.querySelectorAll('.stepper').forEach(st=>{
+      st.querySelector('.val').textContent=settings[st.dataset.key];
+    });
+    document.querySelectorAll('.switch').forEach(sw=>{
+      sw.setAttribute('aria-checked', settings[sw.dataset.toggle]);
+    });
+  }
+  document.querySelectorAll('.stepper').forEach(st=>{
+    const key=st.dataset.key;
+    const step=+st.dataset.step, min=+st.dataset.min, max=+st.dataset.max;
+    const val=st.querySelector('.val');
+    st.querySelectorAll('.step').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        settings[key]=Math.min(max, Math.max(min, settings[key]+step*(+btn.dataset.dir)));
+        val.textContent=settings[key];
+        if(key==='laps'){
+          state.focusInCycle=Math.min(state.focusInCycle, settings.laps-1);
+        }else if(key===state.mode && !state.running){
+          state.remaining=durMs(state.mode);
+        }
+        render();
+        saveSoon();
+      });
+    });
+  });
+  document.querySelectorAll('.switch').forEach(sw=>{
+    sw.addEventListener('click',()=>{
+      const key=sw.dataset.toggle;
+      settings[key]=!settings[key];
+      sw.setAttribute('aria-checked', settings[key]);
+      saveSoon();
+    });
+  });
+
+  /* ==================== main controls & keys ==================== */
+  document.getElementById('startBtn').addEventListener('click',toggle);
+  document.getElementById('resetBtn').addEventListener('click',reset);
+  document.getElementById('skipBtn').addEventListener('click',skip);
+  document.querySelectorAll('[data-mode-btn]').forEach(b=>{
+    b.addEventListener('click',()=>setMode(b.dataset.modeBtn));
+  });
+  window.addEventListener('keydown',e=>{
+    if(e.target.closest('button, input, textarea, select')) return;
+    if(e.code==='Space'){ e.preventDefault(); toggle(); }
+    else if(e.key==='r'||e.key==='R'){ reset(); }
+    else if(e.key==='s'||e.key==='S'){ skip(); }
+    else if(e.key==='Escape'){ closePanels(); }
+  });
+
+  /* ==================== go ==================== */
+  render();
+  renderTodos();
+  renderTelemetry();
+  loadData();
+})();
+</script>
+</body>
+</html>
