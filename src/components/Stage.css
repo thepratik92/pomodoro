@@ -187,21 +187,35 @@
 }
 .task-banner-empty {
   display: block;
-  padding: 10px 16px;
-  border: 1px dashed var(--t-hair2);
+  padding: 11px 18px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 999px;
   font-family: 'Michroma', sans-serif;
-  font-size: 7.5px;
+  font-size: 8.5px;
   letter-spacing: 0.3em;
   text-indent: 0.3em;
-  color: var(--t-faint);
+  color: var(--accent);
+  animation: task-nudge 3.2s ease-in-out infinite;
   transition:
     color 0.25s,
-    border-color 0.25s;
+    border-color 0.25s,
+    box-shadow 0.25s;
 }
 .task-banner:hover .task-banner-empty {
-  color: var(--t-muted);
-  border-color: var(--t-hair2);
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--glow);
+  animation-play-state: paused;
+}
+@keyframes task-nudge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 transparent;
+    opacity: 0.75;
+  }
+  50% {
+    box-shadow: 0 0 14px var(--glow);
+    opacity: 1;
+  }
 }
 
 /* Controls */
