@@ -1,3 +1,4 @@
+import SlidePanel from './SlidePanel';
 import './Panel.css';
 import './Telemetry.css';
 import { dayKey, shiftDays } from '../utils/dateKeys';
@@ -50,7 +51,7 @@ function WeekChart({ days }) {
   );
 }
 
-export default function Telemetry({ transform, days, stats, sync, onClose }) {
+export default function Telemetry({ open, onProgress, days, stats, sync, onClose }) {
   const { today, weekM, weekS, streak } = stats;
   const rows = [
     { label: 'TODAY', value: today.m + ' min · ' + today.s + ' lap' + (today.s === 1 ? '' : 's') },
@@ -61,7 +62,7 @@ export default function Telemetry({ transform, days, stats, sync, onClose }) {
   const syncOn = sync !== 'off';
 
   return (
-    <aside role="dialog" aria-modal="true" aria-label="Telemetry" className="panel panel--right" style={{ transform }}>
+    <SlidePanel side="right" open={open} onClose={onClose} onProgress={onProgress} ariaLabel="Telemetry">
       <div className="panel-header">
         <div className="panel-title">TELEMETRY</div>
         <button type="button" className="panel-close" onClick={onClose} aria-label="Close telemetry">
@@ -94,6 +95,6 @@ export default function Telemetry({ transform, days, stats, sync, onClose }) {
         ></span>
         <span>{syncText}</span>
       </div>
-    </aside>
+    </SlidePanel>
   );
 }

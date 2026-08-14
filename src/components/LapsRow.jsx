@@ -1,4 +1,4 @@
-export default function LapsRow({ visible, mode, focusInCycle, laps, todayCount }) {
+export default function LapsRow({ mode, focusInCycle, laps, todayCount }) {
   const toms = [];
   for (let i = 0; i < laps; i++) {
     const done = i < focusInCycle;
@@ -13,7 +13,7 @@ export default function LapsRow({ visible, mode, focusInCycle, laps, todayCount 
   const todayLine = todayCount + ' POMODOR' + (todayCount === 1 ? 'O' : 'I') + ' TODAY';
 
   return (
-    <section className="laps" style={{ display: visible ? 'flex' : 'none' }}>
+    <section className="laps">
       <div className="laps-row">
         {toms.map((t, i) => (
           <span key={i} className="lap-tomato">

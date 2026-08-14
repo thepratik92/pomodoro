@@ -11,12 +11,6 @@
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  animation: picker-scrim-in 0.3s ease;
-}
-@keyframes picker-scrim-in {
-  from {
-    opacity: 0;
-  }
 }
 .picker-card {
   position: relative;
@@ -31,22 +25,9 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-  /* Materialize: blur and scale settle together, origin toward the engine
-     button below, so the card reads as rising from what triggered it. */
+  /* Materialize entrance/exit is spring-driven in TaskPicker.jsx;
+     origin toward the engine button that triggers it. */
   transform-origin: 50% 90%;
-  animation: picker-in 0.32s cubic-bezier(0.21, 1, 0.32, 1);
-}
-@keyframes picker-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.96);
-    filter: blur(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: none;
-  }
 }
 .picker-header {
   display: flex;

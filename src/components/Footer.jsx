@@ -1,6 +1,6 @@
-export default function Footer({ visible }) {
+export default function Footer() {
   return (
-    <footer className="app-footer" style={{ display: visible ? 'flex' : 'none' }}>
+    <footer className="app-footer">
       <span>Space · Start / Pause</span>
       <span className="footer-sep"></span>
       <span>R · Reset</span>

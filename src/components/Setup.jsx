@@ -1,3 +1,4 @@
+import SlidePanel from './SlidePanel';
 import './Panel.css';
 import './Setup.css';
 
@@ -15,9 +16,9 @@ const SWITCHES = [
 
 const THEMES = ['dark', 'light', 'sepia'];
 
-export default function Setup({ transform, settings, onClose, onStepSetting, onToggleSetting }) {
+export default function Setup({ open, onProgress, settings, onClose, onStepSetting, onToggleSetting }) {
   return (
-    <aside role="dialog" aria-modal="true" aria-label="Set-up" className="panel panel--right" style={{ transform }}>
+    <SlidePanel side="right" open={open} onClose={onClose} onProgress={onProgress} ariaLabel="Set-up">
       <div className="panel-header">
         <div className="panel-title">SET-UP</div>
         <button type="button" className="panel-close" onClick={onClose} aria-label="Close set-up">
@@ -101,6 +102,6 @@ export default function Setup({ transform, settings, onClose, onStepSetting, onT
       <p className="setup-note">
         Each focus session is a lap — one pomodoro. After the final lap of a set, the long break comes in, then a fresh set begins.
       </p>
-    </aside>
+    </SlidePanel>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BUCKETS } from '../hooks/useTempo';
+import SlidePanel from './SlidePanel';
 import './Panel.css';
 import './PitBoard.css';
 
@@ -15,7 +16,8 @@ function CloseIcon() {
 }
 
 export default function PitBoard({
-  transform,
+  open,
+  onProgress,
   draft,
   todos,
   currentTaskId,
@@ -33,7 +35,7 @@ export default function PitBoard({
   const nextBucket = (b) => BUCKETS[(BUCKETS.indexOf(b) + 1) % BUCKETS.length];
 
   return (
-    <aside role="dialog" aria-modal="true" aria-label="Pit board" className="panel panel--left" style={{ transform }}>
+    <SlidePanel side="left" open={open} onClose={onClose} onProgress={onProgress} ariaLabel="Pit board">
       <div className="panel-header">
         <div className="panel-title">PIT BOARD</div>
         <button type="button" className="panel-close" onClick={onClose} aria-label="Close pit board">
@@ -153,6 +155,6 @@ export default function PitBoard({
           CLEAR COMPLETED
         </button>
       )}
-    </aside>
+    </SlidePanel>
   );
 }

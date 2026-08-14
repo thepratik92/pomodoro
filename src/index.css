@@ -139,22 +139,8 @@ input {
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-  /* Panels and stage shift appear in place instead of sliding */
-  .panel,
-  .app-shell {
-    transition-duration: 0.01s !important;
-  }
-  /* Picker cross-fades instead of materializing */
-  .picker-card {
-    animation: picker-fade 0.18s ease !important;
-  }
   .switch-knob {
     transition-duration: 0.01s !important;
-  }
-}
-@keyframes picker-fade {
-  from {
-    opacity: 0;
   }
 }
 

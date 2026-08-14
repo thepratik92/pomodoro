@@ -305,17 +305,19 @@ export function useTempo() {
 
   useEffect(() => {
     const keyH = (e) => {
-      if (e.target && e.target.closest && e.target.closest('button, input, textarea, select')) return;
       const l = latestRef.current;
+      // Escape dismisses the top surface even while typing in it.
+      if (e.key === 'Escape') {
+        if (l.state.picker) l.closePicker();
+        else l.closePanels();
+        return;
+      }
+      if (e.target && e.target.closest && e.target.closest('button, input, textarea, select')) return;
       if (e.code === 'Space') {
         e.preventDefault();
         l.toggleRun();
       } else if (e.key === 'r' || e.key === 'R') l.reset();
       else if (e.key === 's' || e.key === 'S') l.skip();
-      else if (e.key === 'Escape') {
-        if (l.state.picker) l.closePicker();
-        else l.closePanels();
-      }
     };
     window.addEventListener('keydown', keyH);
     return () => window.removeEventListener('keydown', keyH);

@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { BUCKETS } from '../hooks/useTempo';
 import './TaskPicker.css';
 
 const BUCKET_LABELS = { today: 'TODAY', tomorrow: 'TOMORROW', someday: 'SOMEDAY' };
 
+// Materialize (§12): blur, scale, and position settle together, and the exit
+// retraces the entrance path (§7 spatial consistency).
+const CARD_HIDDEN = { opacity: 0, y: 14, scale: 0.96, filter: 'blur(8px)' };
+const CARD_SHOWN = { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' };
+const CARD_SPRING = { type: 'spring', stiffness: 500, damping: 44 };
+
 export default function TaskPicker({ open, intent, todos, currentTaskId, onPick, onAdd, onStartWithoutTask, onClose }) {
   const [text, setText] = useState('');
   const inputRef = useRef(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     if (open) {
@@ -16,8 +24,6 @@ export default function TaskPicker({ open, intent, todos, currentTaskId, onPick,
       return () => clearTimeout(t);
     }
   }, [open]);
-
-  if (!open) return null;
 
   const submit = () => {
     if (text.trim()) onAdd(text);
@@ -30,9 +36,27 @@ export default function TaskPicker({ open, intent, todos, currentTaskId, onPick,
   })).filter((s) => s.items.length > 0);
 
   return (
+    <AnimatePresence>
+      {open && (
     <div className="picker-layer">
-      <div className="picker-scrim" onClick={onClose}></div>
-      <div role="dialog" aria-modal="true" aria-label="Select focus task" className="picker-card">
+      <motion.div
+        className="picker-scrim"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.22 }}
+        onClick={onClose}
+      ></motion.div>
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Select focus task"
+        className="picker-card"
+        initial={reduced ? { opacity: 0 } : CARD_HIDDEN}
+        animate={reduced ? { opacity: 1 } : CARD_SHOWN}
+        exit={reduced ? { opacity: 0 } : CARD_HIDDEN}
+        transition={reduced ? { duration: 0.15 } : CARD_SPRING}
+      >
         <div className="picker-header">
           <div>
             <div className="picker-title">NEXT STINT</div>
@@ -90,7 +114,9 @@ export default function TaskPicker({ open, intent, todos, currentTaskId, onPick,
             START WITHOUT TASK
           </button>
         )}
-      </div>
+      </motion.div>
     </div>
+      )}
+    </AnimatePresence>
   );
 }

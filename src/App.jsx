@@ -1,8 +1,11 @@
+import { useCallback } from 'react';
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'motion/react';
 import './App.css';
 import { useTempo } from './hooks/useTempo';
 import Header from './components/Header';
 import Stage from './components/Stage';
 import Footer from './components/Footer';
+import Collapse from './components/Collapse';
 import PitBoard from './components/PitBoard';
 import TaskPicker from './components/TaskPicker';
 import Telemetry from './components/Telemetry';
@@ -15,11 +18,21 @@ export default function App() {
   const effPanel = docked ? null : panel;
   const chromeVisible = !docked;
   const overlayOpen = Boolean(effPanel && effPanel !== 'board');
-  const stagePad = effPanel === 'board' && !narrow ? '340px' : '0px';
-  const panelTf = (name, side) => (effPanel === name ? 'translateX(0)' : side === 'left' ? 'translateX(-103%)' : 'translateX(103%)');
+
+  // Panel openness as live values (1 = open), fed by the panels' springs and
+  // drags, so the scrim and stage shift track the actual motion 1:1.
+  const boardProg = useMotionValue(effPanel === 'board' && !narrow ? 1 : 0);
+  const telemetryProg = useMotionValue(0);
+  const setupProg = useMotionValue(0);
+  const onBoardProgress = useCallback((v) => boardProg.set(v), [boardProg]);
+  const onTelemetryProgress = useCallback((v) => telemetryProg.set(v), [telemetryProg]);
+  const onSetupProgress = useCallback((v) => setupProg.set(v), [setupProg]);
+
+  const stagePad = useTransform(boardProg, (p) => (narrow ? 0 : Math.round(p * 340)) + 'px');
+  const scrimOpacity = useTransform(() => Math.max(telemetryProg.get(), setupProg.get()));
 
   return (
-    <div className="app-shell" style={{ paddingLeft: stagePad }}>
+    <motion.div className="app-shell" style={{ paddingLeft: stagePad }}>
       <div
         className="ambient"
         style={{
@@ -28,37 +41,52 @@ export default function App() {
         }}
       ></div>
 
-      <Header
-        chromeVisible={chromeVisible}
-        onOpenBoard={tempo.openBoard}
-        onToggleDock={tempo.toggleDock}
-        onOpenTelemetry={tempo.openTelemetry}
-        onOpenSetup={tempo.openSetup}
-      />
+      <Collapse show={chromeVisible}>
+        <Header
+          onOpenBoard={tempo.openBoard}
+          onToggleDock={tempo.toggleDock}
+          onOpenTelemetry={tempo.openTelemetry}
+          onOpenSetup={tempo.openSetup}
+        />
+      </Collapse>
 
       <Stage tempo={tempo} lapsVisible={!docked} />
 
-      <Footer visible={chromeVisible} />
+      <Collapse show={chromeVisible}>
+        <Footer />
+      </Collapse>
 
-      <button
-        type="button"
-        className="undock-btn"
-        style={{ display: docked ? 'grid' : 'none' }}
-        onClick={tempo.toggleDock}
-        aria-label="Undock widget"
-        title="Undock"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="12" y1="18" x2="12" y2="8"></line>
-          <polyline points="8 12 12 8 16 12"></polyline>
-          <line x1="5" y1="4" x2="19" y2="4"></line>
-        </svg>
-      </button>
+      <AnimatePresence>
+        {docked && (
+          <motion.button
+            type="button"
+            className="undock-btn"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: 'spring', stiffness: 440, damping: 40 }}
+            onClick={tempo.toggleDock}
+            aria-label="Undock widget"
+            title="Undock"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="18" x2="12" y2="8"></line>
+              <polyline points="8 12 12 8 16 12"></polyline>
+              <line x1="5" y1="4" x2="19" y2="4"></line>
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
-      <div className="scrim" style={{ opacity: overlayOpen ? 1 : 0, pointerEvents: overlayOpen ? 'auto' : 'none' }} onClick={tempo.closePanels}></div>
+      <motion.div
+        className="scrim"
+        style={{ opacity: scrimOpacity, pointerEvents: overlayOpen ? 'auto' : 'none' }}
+        onClick={tempo.closePanels}
+      ></motion.div>
 
       <PitBoard
-        transform={panelTf('board', 'left')}
+        open={effPanel === 'board'}
+        onProgress={onBoardProgress}
         draft={draft}
         todos={todos}
         currentTaskId={tempo.currentTaskId}
@@ -82,15 +110,16 @@ export default function App() {
         onClose={tempo.closePicker}
       />
 
-      <Telemetry transform={panelTf('telemetry', 'right')} days={days} stats={stats} sync={sync} onClose={tempo.closePanels} />
+      <Telemetry open={effPanel === 'telemetry'} onProgress={onTelemetryProgress} days={days} stats={stats} sync={sync} onClose={tempo.closePanels} />
 
       <Setup
-        transform={panelTf('setup', 'right')}
+        open={effPanel === 'setup'}
+        onProgress={onSetupProgress}
         settings={settings}
         onClose={tempo.closePanels}
         onStepSetting={tempo.stepSetting}
         onToggleSetting={tempo.toggleSetting}
       />
-    </div>
+    </motion.div>
   );
 }

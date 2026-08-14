@@ -1,8 +1,8 @@
 import './Header.css';
 
-export default function Header({ chromeVisible, onOpenBoard, onToggleDock, onOpenTelemetry, onOpenSetup }) {
+export default function Header({ onOpenBoard, onToggleDock, onOpenTelemetry, onOpenSetup }) {
   return (
-    <header className="topbar" style={{ display: chromeVisible ? 'flex' : 'none' }}>
+    <header className="topbar">
       <div className="topbar-side topbar-side--left">
         <button
           type="button"

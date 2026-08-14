@@ -1,4 +1,5 @@
 import './Stage.css';
+import Collapse from './Collapse';
 import ModeNav from './ModeNav';
 import Dial from './Dial';
 import Controls from './Controls';
@@ -21,7 +22,9 @@ export default function Stage({ tempo, lapsVisible }) {
         onTaskClick={() => openPicker('switch')}
       />
       <Controls running={running} onReset={reset} onToggleRun={toggleRun} onSkip={skip} />
-      <LapsRow visible={lapsVisible} mode={mode} focusInCycle={focusInCycle} laps={settings.laps} todayCount={stats.today.s || 0} />
+      <Collapse show={lapsVisible}>
+        <LapsRow mode={mode} focusInCycle={focusInCycle} laps={settings.laps} todayCount={stats.today.s || 0} />
+      </Collapse>
     </main>
   );
 }
