@@ -40,6 +40,13 @@
   color: var(--t-text);
   border-color: var(--t-hair);
 }
+.icon-btn:active {
+  transform: scale(0.92);
+  transition:
+    transform 100ms ease-out,
+    color 0.25s,
+    border-color 0.25s;
+}
 
 .icon-svg {
   width: 19px;

@@ -1,6 +1,6 @@
 import { chromium } from 'playwright-core';
 
-const base = 'http://127.0.0.1:4173';
+const base = process.env.SMOKE_URL || 'http://127.0.0.1:4173';
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const page = await browser.newPage();
 const errors = [];

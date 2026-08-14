@@ -222,3 +222,19 @@
 .clear-done-btn:hover {
   color: var(--t-text);
 }
+
+/* Instant press feedback (respond on pointer-down) */
+.todo-add-btn:active,
+.todo-check:active,
+.todo-move:active,
+.todo-del:active {
+  transform: scale(0.9);
+  transition: transform 100ms ease-out;
+}
+.bucket-chip:active {
+  transform: scale(0.95);
+  transition: transform 100ms ease-out;
+}
+.clear-done-btn:active {
+  opacity: 0.6;
+}

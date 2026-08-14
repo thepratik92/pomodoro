@@ -95,6 +95,8 @@
   font-weight: 200;
   font-size: clamp(64px, 15vmin, 108px);
   line-height: 1;
+  /* Display-size digits want negative tracking; letters drift apart as type grows */
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   transition: color 0.5s ease;
 }

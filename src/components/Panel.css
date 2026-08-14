@@ -3,12 +3,18 @@
   top: 0;
   bottom: 0;
   width: min(90vw, 340px);
-  background: var(--t-panel);
+  /* Translucent material: the timer stays faintly present behind the panel,
+     so opening a panel reads as a layer, not a page change. */
+  background: color-mix(in srgb, var(--t-panel) 80%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
   z-index: 50;
   padding: 28px 26px;
   display: flex;
   flex-direction: column;
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0.28, 1);
+  will-change: transform;
 }
 .panel--left {
   left: 0;
@@ -51,6 +57,13 @@
 .panel-close:hover {
   color: var(--t-text);
   border-color: var(--t-hair);
+}
+.panel-close:active {
+  transform: scale(0.92);
+  transition:
+    transform 100ms ease-out,
+    color 0.25s,
+    border-color 0.25s;
 }
 .panel-close svg {
   width: 13px;

@@ -113,3 +113,17 @@
   color: var(--t-faint);
   margin-bottom: 0;
 }
+
+/* Instant press feedback (respond on pointer-down) */
+.stepper-btn:active {
+  transform: scale(0.9);
+  transition: transform 100ms ease-out;
+}
+.theme-btn:active {
+  transform: scale(0.95);
+  transition: transform 100ms ease-out;
+}
+.switch:active .switch-knob {
+  /* Knob widens under the finger like a real switch */
+  width: 20px;
+}

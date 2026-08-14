@@ -117,3 +117,62 @@ input {
     opacity: 1;
   }
 }
+
+/* ---- Accessibility: gentler equivalents, not missing feedback ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Full-viewport breathing glow is exactly the slow oscillation to avoid */
+  .ambient {
+    animation: none !important;
+  }
+  /* Attention nudge holds its accent color without pulsing */
+  .task-banner-empty {
+    animation: none !important;
+    opacity: 1;
+  }
+  /* Ticker stops; long tasks truncate with an ellipsis instead */
+  .task-banner-text--scroll {
+    animation: none !important;
+    display: inline;
+  }
+  .task-banner-viewport--scroll {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  /* Panels and stage shift appear in place instead of sliding */
+  .panel,
+  .app-shell {
+    transition-duration: 0.01s !important;
+  }
+  /* Picker cross-fades instead of materializing */
+  .picker-card {
+    animation: picker-fade 0.18s ease !important;
+  }
+  .switch-knob {
+    transition-duration: 0.01s !important;
+  }
+}
+@keyframes picker-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .panel,
+  .picker-card {
+    background: var(--t-panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .panel,
+  .picker-card {
+    background: var(--t-panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--t-hair2);
+  }
+}
