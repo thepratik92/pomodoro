@@ -11,17 +11,21 @@
 .mode-nav {
   display: flex;
   align-items: center;
-  gap: 26px;
+  justify-content: center;
+  gap: clamp(13px, 4.6vw, 26px);
   margin-bottom: clamp(6px, 1.8vh, 16px);
 }
 .mode-btn {
   background: none;
   border: none;
   cursor: pointer;
-  font-family: 'Michroma', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.24em;
-  text-indent: 0.24em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  /* Sized so all three labels stay on one line down to ~340px wide. */
+  font-size: clamp(11px, 2.95vw, 12.5px);
+  letter-spacing: clamp(0.1em, 0.35vw, 0.16em);
+  text-indent: clamp(0.1em, 0.35vw, 0.16em);
+  white-space: nowrap;
   text-transform: uppercase;
   padding: 10px 2px 12px;
   position: relative;
@@ -69,24 +73,36 @@
 .dial-dot {
   filter: drop-shadow(0 0 7px var(--glow));
 }
+/* Readout and task banner share one flow so they can never overlap: the banner
+   is pinned to the arc gap by the bottom padding, and the readout centres in
+   whatever height is left. */
 .dial-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: clamp(12px, 3.5vmin, 26px);
+  padding: 6px 4% 13.5%;
   pointer-events: none;
-  padding-top: 6px;
+}
+.dial-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Auto margins hand the slack to the readout, so the banner stays parked in
+     the arc's open gap while the clock centres in what is left above it. */
+  margin-block: auto;
 }
 .lap-line {
-  font-family: 'Michroma', sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
   color: var(--t-muted);
-  margin-bottom: 14px;
-  min-height: 11px;
+  margin-bottom: 12px;
+  min-height: 12px;
 }
 .timer-display {
   display: flex;
@@ -106,21 +122,18 @@
   transform: translateY(-0.06em);
 }
 .state-line {
-  margin-top: 16px;
-  font-family: 'Michroma', sans-serif;
-  font-size: 9px;
-  letter-spacing: 0.4em;
-  text-indent: 0.4em;
-  min-height: 10px;
+  margin-top: 14px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  min-height: 12px;
 }
 
 /* Current focus task: banner in the dial's open arc gap, impossible to miss */
 .task-banner {
-  position: absolute;
-  bottom: 13.5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 54%;
+  width: 62%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -129,13 +142,15 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  pointer-events: auto;
   z-index: 1;
 }
 .task-banner-label {
-  font-family: 'Michroma', sans-serif;
-  font-size: 6.5px;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
   color: var(--t-faint);
   transition: color 0.25s;
 }
@@ -192,11 +207,13 @@
   padding: 11px 18px;
   border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 999px;
-  font-family: 'Michroma', sans-serif;
-  font-size: 8.5px;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  color: var(--accent);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  white-space: nowrap;
+  color: var(--accent-ink);
   animation: task-nudge 3.2s ease-in-out infinite;
   transition:
     color 0.25s,
@@ -265,7 +282,7 @@
   background: radial-gradient(circle at 50% 32%, var(--t-eng1), var(--t-eng2) 72%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 -8px 16px rgba(0, 0, 0, 0.55),
+    inset 0 -8px 16px var(--t-engshade),
     0 0 0 6px rgba(255, 255, 255, 0.025),
     0 0 18px var(--glow);
   display: flex;
@@ -281,7 +298,7 @@
 .btn-engine:hover {
   box-shadow:
     inset 0 1px 0 var(--t-hair),
-    inset 0 -8px 16px rgba(0, 0, 0, 0.55),
+    inset 0 -8px 16px var(--t-engshade),
     0 0 0 6px var(--t-shine),
     0 0 30px var(--glow);
 }
@@ -289,14 +306,15 @@
   transform: scale(0.965);
 }
 .btn-engine-label {
-  font-family: 'Michroma', sans-serif;
-  font-size: 8px;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  color: var(--t-faint);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--t-muted);
 }
 .btn-engine-state {
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-size: 12px;
   letter-spacing: 0.26em;
   text-indent: 0.26em;
@@ -335,11 +353,12 @@
   transition: stroke 0.4s;
 }
 .today-line {
-  font-family: 'Michroma', sans-serif;
-  font-size: 8.5px;
-  letter-spacing: 0.36em;
-  text-indent: 0.36em;
-  color: var(--t-faint);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: var(--t-muted);
 }
 
 /* Footer */
@@ -348,17 +367,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 16px 20px 20px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 14px 20px 18px;
   border-top: 1px solid var(--t-hair);
-  font-family: 'Michroma', sans-serif;
-  font-size: 8px;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  color: var(--t-faint);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--t-muted);
   text-transform: uppercase;
 }
+/* Each hint stays on one line; the row wraps between hints instead of
+   breaking "START / PAUSE" across lines. */
+.app-footer > span:not(.footer-sep) {
+  white-space: nowrap;
+}
 .footer-sep {
+  flex: none;
   width: 3px;
   height: 3px;
   border-radius: 50%;

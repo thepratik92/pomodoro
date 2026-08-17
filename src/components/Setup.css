@@ -6,19 +6,22 @@
   border-bottom: 1px solid var(--t-hair);
 }
 .setup-label {
-  font-family: 'Michroma', sans-serif;
-  font-size: 9.5px;
-  letter-spacing: 0.26em;
-  text-indent: 0.26em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
   color: var(--t-muted);
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  min-width: 0;
+  padding-right: 12px;
 }
 .setup-unit {
-  font-size: 7.5px;
+  font-size: 10px;
   color: var(--t-faint);
-  letter-spacing: 0.26em;
+  letter-spacing: 0.14em;
 }
 
 .stepper {
@@ -90,12 +93,12 @@
   background: none;
   border: 1px solid;
   border-radius: 12px;
-  padding: 6px 10px;
+  padding: 6px 11px;
   cursor: pointer;
-  font-family: 'Michroma', sans-serif;
-  font-size: 8px;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
   transition:
     color 0.2s,
     border-color 0.2s;
@@ -107,9 +110,9 @@
 .setup-note {
   margin-top: auto;
   padding-top: 20px;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--t-faint);
   margin-bottom: 0;
 }
@@ -117,16 +120,22 @@
 /* Cloud sync row */
 .setup-row--sync { align-items: flex-start; padding-top: 20px; }
 .sync-badge {
-  font-size: 7px;
-  letter-spacing: 0.2em;
-  padding: 2px 6px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 1px 6px;
   border-radius: 4px;
-  border: 1px solid var(--t-hair);
+  border: 1px solid var(--t-hair2);
   color: var(--t-faint);
 }
 .sync-badge[data-on='true'] {
-  border-color: #4F9457;
-  color: #4F9457;
+  border-color: #3d7444;
+  color: #3d7444;
+}
+/* The green reads on the dark ground; on light and sepia it needs to go darker. */
+html[data-theme='dark'] .sync-badge[data-on='true'] {
+  border-color: #5aa663;
+  color: #5aa663;
 }
 .sync-signed-in {
   display: flex;
@@ -135,7 +144,7 @@
   gap: 8px;
 }
 .sync-email {
-  font-size: 10px;
+  font-size: 11.5px;
   color: var(--t-muted);
   max-width: 160px;
   overflow: hidden;
@@ -150,17 +159,18 @@
   background: none;
   border: 1px solid var(--t-hair);
   border-radius: 8px;
-  padding: 7px 12px;
+  padding: 8px 12px;
   cursor: pointer;
-  font-family: 'Michroma', sans-serif;
-  font-size: 8px;
-  letter-spacing: 0.2em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.11em;
   color: var(--t-muted);
   transition: border-color 0.2s, color 0.2s;
   white-space: nowrap;
 }
 .sync-btn:hover { border-color: var(--t-hair2); color: var(--t-text); }
-.sync-btn--google { border-color: rgba(255,255,255,0.18); }
+.sync-btn--google { border-color: var(--t-hair2); }
 .sync-btn:active { transform: scale(0.95); transition: transform 80ms ease-out; }
 
 /* Instant press feedback (respond on pointer-down) */

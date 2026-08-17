@@ -17,12 +17,12 @@
   border: 1px solid var(--t-hair);
   color: var(--t-faint);
   border-radius: 11px;
-  padding: 5px 9px;
+  padding: 5px 10px;
   cursor: pointer;
-  font-family: 'Michroma', sans-serif;
-  font-size: 7px;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
   transition:
     color 0.2s,
     border-color 0.2s;
@@ -40,7 +40,7 @@
   border: none;
   border-bottom: 1px solid var(--t-hair);
   padding: 7px 2px;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 15.5px;
   color: var(--t-text);
   outline: none;
@@ -57,7 +57,7 @@
   border: 1px solid var(--t-hair);
   color: var(--t-muted);
   cursor: pointer;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 19px;
   line-height: 1;
   display: grid;
@@ -80,7 +80,7 @@
 }
 .todo-empty {
   padding: 26px 4px;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 14px;
   line-height: 1.6;
   color: var(--t-faint);
@@ -92,18 +92,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Michroma', sans-serif;
-  font-size: 8px;
-  letter-spacing: 0.32em;
-  text-indent: 0.32em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
   color: var(--t-faint);
   padding: 16px 0 4px;
 }
 .todo-section-count {
-  font-family: 'Titillium Web', sans-serif;
-  font-size: 10px;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
   letter-spacing: 0;
-  text-indent: 0;
   color: var(--t-faint);
   border: 1px solid var(--t-hair);
   border-radius: 9px;
@@ -137,7 +136,7 @@
   cursor: pointer;
   display: grid;
   place-items: center;
-  opacity: 0.35;
+  opacity: 0.75;
   transition:
     opacity 0.2s,
     color 0.2s;
@@ -173,7 +172,7 @@
 }
 .todo-text {
   flex: 1;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 15.5px;
   line-height: 1.4;
   overflow-wrap: anywhere;
@@ -190,7 +189,7 @@
   cursor: pointer;
   display: grid;
   place-items: center;
-  opacity: 0.35;
+  opacity: 0.75;
   transition:
     opacity 0.2s,
     color 0.2s;
@@ -211,10 +210,10 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: 'Michroma', sans-serif;
-  font-size: 8.5px;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.16em;
   color: var(--t-faint);
   padding: 8px 0;
   transition: color 0.25s;

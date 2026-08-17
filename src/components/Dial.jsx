@@ -65,7 +65,7 @@ export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle
   const lapLine = mode === 'focus' ? 'LAP ' + Math.min(focusInCycle + 1, laps) + ' · ' + laps : 'PIT STOP';
   const timeColor = mode === 'focus' && running && remainingMs < 60000 ? 'var(--accent)' : 'var(--t-text)';
   const stateLine = running ? '' : paused ? 'PAUSED' : 'READY';
-  const stateColor = paused ? 'var(--accent)' : 'var(--t-faint)';
+  const stateColor = paused ? 'var(--accent-ink)' : 'var(--t-muted)';
 
   return (
     <section className="dial">
@@ -93,41 +93,43 @@ export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle
         <circle r="5.5" cx={nx} cy={ny} fill="var(--accent)" className="dial-dot"></circle>
       </svg>
       <div className="dial-overlay">
-        <div className="lap-line">{lapLine}</div>
-        <div role="timer" className="timer-display" style={{ color: timeColor }}>
-          <span>{mm}</span>
-          <span className="timer-colon">:</span>
-          <span>{ss}</span>
+        <div className="dial-readout">
+          <div className="lap-line">{lapLine}</div>
+          <div role="timer" className="timer-display" style={{ color: timeColor }}>
+            <span>{mm}</span>
+            <span className="timer-colon">:</span>
+            <span>{ss}</span>
+          </div>
+          <div className="state-line" style={{ color: stateColor }}>
+            {stateLine}
+          </div>
         </div>
-        <div className="state-line" style={{ color: stateColor }}>
-          {stateLine}
-        </div>
-      </div>
-      <button
-        type="button"
-        className="task-banner"
-        onClick={onTaskClick}
-        title={currentTask ? 'Change focus task' : 'Set focus task'}
-      >
-        {currentTask ? (
-          <>
-            <span className="task-banner-label">CURRENT TASK</span>
-            <span className="task-banner-pill">
-              <span className={'task-banner-viewport' + (marquee ? ' task-banner-viewport--scroll' : '')} ref={viewRef}>
-                <span
-                  className={'task-banner-text' + (marquee ? ' task-banner-text--scroll' : '')}
-                  ref={textRef}
-                  style={marquee ? { '--marq-shift': marquee.shift + 'px', '--marq-dur': marquee.dur + 's' } : undefined}
-                >
-                  {currentTask.text}
+        <button
+          type="button"
+          className="task-banner"
+          onClick={onTaskClick}
+          title={currentTask ? 'Change focus task' : 'Set focus task'}
+        >
+          {currentTask ? (
+            <>
+              <span className="task-banner-label">CURRENT TASK</span>
+              <span className="task-banner-pill">
+                <span className={'task-banner-viewport' + (marquee ? ' task-banner-viewport--scroll' : '')} ref={viewRef}>
+                  <span
+                    className={'task-banner-text' + (marquee ? ' task-banner-text--scroll' : '')}
+                    ref={textRef}
+                    style={marquee ? { '--marq-shift': marquee.shift + 'px', '--marq-dur': marquee.dur + 's' } : undefined}
+                  >
+                    {currentTask.text}
+                  </span>
                 </span>
               </span>
-            </span>
-          </>
-        ) : (
-          <span className="task-banner-empty">+ SET FOCUS TASK</span>
-        )}
-      </button>
+            </>
+          ) : (
+            <span className="task-banner-empty">+ SET FOCUS TASK</span>
+          )}
+        </button>
+      </div>
     </section>
   );
 }

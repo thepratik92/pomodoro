@@ -34,14 +34,14 @@ function WeekChart({ days }) {
             {v > 0 ? (
               <>
                 <rect x={x} y={y} width={barW} height={h} rx={2.5} fill="#FF2800" opacity={isToday ? 1 : 0.45} style={isToday ? { filter: 'drop-shadow(0 0 6px rgba(255,40,0,.45))' } : undefined} />
-                <text x={x + barW / 2} y={y - 6} textAnchor="middle" fill="var(--t-muted)" style={{ fontSize: 11, fontWeight: 300 }}>
+                <text x={x + barW / 2} y={y - 6} textAnchor="middle" fill="var(--t-muted)" style={{ fontSize: 11.5, fontWeight: 400 }}>
                   {v}
                 </text>
               </>
             ) : (
               <rect x={x} y={H - padB - 2} width={barW} height={2} rx={1} fill="#FF2800" opacity={0.18} />
             )}
-            <text x={x + barW / 2} y={H - 6} textAnchor="middle" fill="var(--t-faint)" style={{ fontSize: 8, fontFamily: "'Michroma',sans-serif", letterSpacing: '.1em' }}>
+            <text x={x + barW / 2} y={H - 5} textAnchor="middle" fill="var(--t-muted)" style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '.1em' }}>
               {labels[idx]}
             </text>
           </g>
