@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Inside the Android shell the assets already ship in the APK, and a
+      // leftover SW cache would keep serving them after an app update.
+      disable: process.env.CAP_BUILD === '1',
       registerType: 'autoUpdate',
       includeAssets: ['icons/apple-touch-icon.png'],
       manifest: {

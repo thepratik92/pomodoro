@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer, useRef } from 'react';
 import { dayKey, shiftDays } from '../utils/dateKeys';
-import { auth, db, googleProvider } from '../services/firebase';
-import { onAuthStateChanged, signInWithPopup, signOut as fbSignOut } from 'firebase/auth';
+import { auth, db, signInWithGoogle, signOutEverywhere } from '../services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { ref, onValue, set } from 'firebase/database';
 
 const STORAGE_KEY = 'tempo-data';
@@ -267,8 +267,8 @@ export function useTempo() {
       }),
     }));
 
-  const signIn = () => signInWithPopup(auth, googleProvider).catch((e) => console.error('Sign-in failed:', e));
-  const signOut = () => fbSignOut(auth).catch((e) => console.error('Sign-out failed:', e));
+  const signIn = () => signInWithGoogle().catch((e) => console.error('Sign-in failed:', e));
+  const signOut = () => signOutEverywhere().catch((e) => console.error('Sign-out failed:', e));
 
   const stepSetting = (key, dir) => {
     const def = STEPPER_DEFS[key];

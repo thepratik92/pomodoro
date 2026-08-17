@@ -1,0 +1,14 @@
+{
+  "appId": "io.github.thepratik92.tempo",
+  "appName": "TEMPO",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#060607"
+  },
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": false,
+      "providers": ["google.com"]
+    }
+  }
+}

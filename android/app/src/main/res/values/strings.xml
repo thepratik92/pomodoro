@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TEMPO</string>
+    <string name="title_activity_main">TEMPO</string>
+    <string name="package_name">io.github.thepratik92.tempo</string>
+    <string name="custom_url_scheme">io.github.thepratik92.tempo</string>
+</resources>
