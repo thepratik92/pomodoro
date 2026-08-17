@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- The ground the tomato artwork is drawn on. Shows through wherever a
+         launcher's mask or parallax reveals the adaptive icon's back layer, so
+         it has to match the foreground's own background exactly. -->
+    <color name="ic_launcher_background">#0C0C0F</color>
 </resources>
