@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1002103673667",
+    "firebase_url": "https://pomodoro-app-46785-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "pomodoro-app-46785",
+    "storage_bucket": "pomodoro-app-46785.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1002103673667:android:b907060aaefe05faaf95f6",
+        "android_client_info": {
+          "package_name": "io.github.thepratik92.tempo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1002103673667-m9cm93uav41qiip7akp3i0smtcjrpc70.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.github.thepratik92.tempo",
+            "certificate_hash": "f04110cd32070b9c6e7a986b5376d703dc69c004"
+          }
+        },
+        {
+          "client_id": "1002103673667-u09sldqbmib7tio7kke2dtfu8u9c5vl8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVbl0sMzUGS4ASSVPL0j6q0FFXgIH2UIM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1002103673667-u09sldqbmib7tio7kke2dtfu8u9c5vl8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
