@@ -97,6 +97,15 @@ body {
   height: 100%;
 }
 
+:root {
+  /* Zero on the web, the system bars on Android. Every edge of the shell reads
+     these rather than hard-coding a phone's chrome. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
 body {
   margin: 0;
   background: var(--t-bg);
@@ -111,6 +120,7 @@ body {
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 a {

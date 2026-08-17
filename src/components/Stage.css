@@ -4,16 +4,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: clamp(12px, 3vh, 30px);
+  /* The stage owns whatever height is left between header and footer, and
+     spreads its rows through it instead of stacking them at the top and
+     leaving a dead half-screen underneath. */
+  justify-content: space-evenly;
+  /* space-evenly distributes what is spare; the gap is the floor, so a short
+     screen still keeps the engine button clear of the task pill. */
+  gap: 12px;
+  padding: clamp(8px, 2vh, 20px) 0;
 }
 
 /* Mode nav */
 .mode-nav {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   gap: clamp(13px, 4.6vw, 26px);
-  margin-bottom: clamp(6px, 1.8vh, 16px);
 }
 .mode-btn {
   background: none;
@@ -52,11 +59,19 @@
   display: block;
 }
 
-/* Dial */
+/* Dial
+   Everything inside is sized off --dial, because the ring is a circle and the
+   room available to a line of text depends on how far it sits from the centre.
+   Reference points in the 440-unit viewBox, as fractions of --dial:
+     arc radius 168/440 = 0.382   tick ring 207/440 = 0.470
+     arc endpoints  x = 0.23 / 0.77,  y = 0.77  (the stroke stops there — the
+     bottom of the ring is open, which is where the task banner lives) */
 .dial {
+  --dial: min(80vw, 42vh, 440px);
   position: relative;
-  width: min(64vmin, 460px);
-  aspect-ratio: 1 / 1;
+  flex: none;
+  width: var(--dial);
+  height: var(--dial);
 }
 .dial-svg {
   width: 100%;
@@ -73,26 +88,22 @@
 .dial-dot {
   filter: drop-shadow(0 0 7px var(--glow));
 }
-/* Readout and task banner share one flow so they can never overlap: the banner
-   is pinned to the arc gap by the bottom padding, and the readout centres in
-   whatever height is left. */
 .dial-overlay {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(12px, 3.5vmin, 26px);
-  padding: 6px 4% 13.5%;
   pointer-events: none;
 }
+/* Anchored on the dial's centre, where the chord across the ring is at its
+   widest — the clock is the line with the least room to spare. */
 .dial-readout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Auto margins hand the slack to the readout, so the banner stays parked in
-     the arc's open gap while the clock centres in what is left above it. */
-  margin-block: auto;
 }
 .lap-line {
   font-family: var(--font-ui);
@@ -101,7 +112,7 @@
   letter-spacing: 0.2em;
   text-indent: 0.2em;
   color: var(--t-muted);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   min-height: 12px;
 }
 .timer-display {
@@ -109,7 +120,9 @@
   align-items: baseline;
   justify-content: center;
   font-weight: 200;
-  font-size: clamp(64px, 15vmin, 108px);
+  /* "88:88" at this size spans ~0.55 of the dial; the ring's inner chord at the
+     digits' height is ~0.75, so the clock clears the stroke at every size. */
+  font-size: min(calc(var(--dial) * 0.225), 108px);
   line-height: 1;
   /* Display-size digits want negative tracking; letters drift apart as type grows */
   letter-spacing: -0.02em;
@@ -122,7 +135,7 @@
   transform: translateY(-0.06em);
 }
 .state-line {
-  margin-top: 14px;
+  margin-top: 12px;
   font-family: var(--font-ui);
   font-weight: 600;
   font-size: 11px;
@@ -131,13 +144,20 @@
   min-height: 12px;
 }
 
-/* Current focus task: banner in the dial's open arc gap, impossible to miss */
+/* Current focus task: banner in the dial's open arc gap, impossible to miss.
+   Bottom-aligned so its top edge always lands below y = 0.77, where the stroke
+   and the tick ring both stop — the label can never be crossed by the ring.
+   Width stays inside the 0.54 gap between the two arc endpoints. */
 .task-banner {
-  width: 62%;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 52%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: none;
   border: none;
   cursor: pointer;
@@ -240,9 +260,9 @@
 /* Controls */
 .controls {
   display: flex;
+  flex: none;
   align-items: center;
-  gap: 34px;
-  margin-top: -28px;
+  gap: clamp(24px, 8vw, 34px);
   position: relative;
   z-index: 2;
 }
@@ -324,7 +344,6 @@
 /* Laps */
 .laps {
   display: flex;
-  padding-top: clamp(14px, 2.4vh, 24px);
   flex-direction: column;
   align-items: center;
   gap: 11px;
@@ -369,7 +388,7 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 8px 16px;
-  padding: 14px 20px 18px;
+  padding: 14px 20px calc(18px + var(--safe-bottom));
   border-top: 1px solid var(--t-hair);
   font-family: var(--font-ui);
   font-weight: 600;

@@ -10,7 +10,7 @@
   backdrop-filter: blur(24px) saturate(160%);
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.25);
   z-index: 50;
-  padding: 28px 26px;
+  padding: calc(28px + var(--safe-top)) 26px calc(28px + var(--safe-bottom));
   display: flex;
   flex-direction: column;
   will-change: transform;
