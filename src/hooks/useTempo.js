@@ -48,6 +48,16 @@ const initialState = {
   userEmail: null,
 };
 
+// Stable serialisation of just the fields that travel to the cloud, so a state
+// change that merely reflects what we already received doesn't get written back.
+function syncBody(s, endAt) {
+  return JSON.stringify([
+    s.days, s.todos, s.settings, s.currentTaskId ?? null,
+    s.mode, !!s.running, s.running ? endAt : null,
+    s.focusInCycle, s.running ? null : s.remaining,
+  ]);
+}
+
 function patchReducer(state, patch) {
   const next = typeof patch === 'function' ? patch(state) : patch;
   return { ...state, ...next };
@@ -67,7 +77,11 @@ export function useTempo() {
   const loadedRef = useRef(false);
   const mountedNarrowCheckedRef = useRef(false);
   const fbUnsubRef = useRef(null);
-  const suppressSaveRef = useRef(false);
+  // Identifies writes made by this tab so its own echo can be ignored exactly,
+  // rather than guessing with a timer.
+  const deviceIdRef = useRef(Math.random().toString(36).slice(2) + Date.now().toString(36));
+  // Serialised state as last agreed with the cloud, either written or received.
+  const lastSyncedRef = useRef(null);
 
   const durMs = (mode) => state.settings[mode] * 60000;
   const remainingMs = state.running ? Math.max(0, endAtRef.current - Date.now()) : state.remaining;
@@ -277,7 +291,7 @@ export function useTempo() {
   // Keep latest imperative handlers reachable from persistent listeners
   // (interval, keydown) without re-subscribing every render.
   const latestRef = useRef({});
-  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef, suppressSaveRef };
+  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-mode', state.mode);
@@ -355,9 +369,9 @@ export function useTempo() {
 
     const applySnapshot = (d) => {
       if (!d) return;
+      // Our own write coming back: already reflected locally, ignore it.
+      if (d.writerId === deviceIdRef.current) return;
       const l = latestRef.current;
-      l.suppressSaveRef.current = true;
-      setTimeout(() => { l.suppressSaveRef.current = false; }, SAVE_DEBOUNCE_MS + 100);
       setState((s) => {
         const patch = {};
         if (Array.isArray(d.todos)) patch.todos = d.todos.slice(0, 80).map((t) => ({ ...t, bucket: BUCKETS.includes(t.bucket) ? t.bucket : 'today' }));
@@ -370,10 +384,14 @@ export function useTempo() {
           l.endAtRef.current = d.endAt;
           patch.running = true;
           patch.remaining = Math.max(0, d.endAt - Date.now());
-        } else if (!s.running) {
+        } else {
+          // A pause or reset elsewhere stops this device too, even mid-run.
           patch.running = false;
           if (typeof d.remaining === 'number') patch.remaining = d.remaining;
         }
+        // Record what we now agree on, so the save effect doesn't echo it back.
+        const merged = { ...s, ...patch };
+        lastSyncedRef.current = syncBody(merged, l.endAtRef.current);
         return patch;
       });
     };
@@ -388,8 +406,9 @@ export function useTempo() {
           // No cloud data yet — push our local state up
           const l = latestRef.current;
           const s = l.state;
+          lastSyncedRef.current = syncBody(s, l.endAtRef.current);
           set(dataRef, {
-            v: 2, updatedAt: Date.now(),
+            v: 2, updatedAt: Date.now(), writerId: deviceIdRef.current,
             days: s.days, todos: s.todos, settings: s.settings,
             currentTaskId: s.currentTaskId, mode: s.mode,
             running: s.running, endAt: l.endAtRef.current,
@@ -457,17 +476,23 @@ export function useTempo() {
         }
       } catch { if (!state.uid) setState({ sync: 'off' }); }
 
-      // Firebase (when signed in and not suppressing to avoid echo)
-      if (state.uid && !suppressSaveRef.current) {
-        try {
-          await set(ref(db, `users/${state.uid}/tempo`), {
-            v: 2, updatedAt: Date.now(),
-            days: state.days, todos: state.todos, settings: state.settings,
-            currentTaskId: state.currentTaskId, mode: state.mode,
-            running: state.running, endAt: endAtRef.current,
-            focusInCycle: state.focusInCycle, remaining: state.remaining,
-          });
-        } catch (err) { console.error('Firebase sync failed:', err); }
+      // Firebase (when signed in). Skip when our state already matches the
+      // cloud — that means this change came from the cloud, and writing it
+      // back would bounce between devices forever.
+      if (state.uid) {
+        const body = syncBody(state, endAtRef.current);
+        if (body !== lastSyncedRef.current) {
+          try {
+            await set(ref(db, `users/${state.uid}/tempo`), {
+              v: 2, updatedAt: Date.now(), writerId: deviceIdRef.current,
+              days: state.days, todos: state.todos, settings: state.settings,
+              currentTaskId: state.currentTaskId, mode: state.mode,
+              running: state.running, endAt: endAtRef.current,
+              focusInCycle: state.focusInCycle, remaining: state.remaining,
+            });
+            lastSyncedRef.current = body;
+          } catch (err) { console.error('Firebase sync failed:', err); }
+        }
       }
     }, SAVE_DEBOUNCE_MS);
     return () => clearTimeout(saveTimerRef.current);
