@@ -20,17 +20,18 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  gap: clamp(13px, 4.6vw, 26px);
+  gap: clamp(12px, 3.6vw, 26px);
 }
 .mode-btn {
   background: none;
   border: none;
   cursor: pointer;
   font-family: var(--font-display);
-  /* Michroma is wide; sized so all three labels stay on one line to ~340px. */
-  font-size: clamp(8.5px, 2.3vw, 10px);
-  letter-spacing: clamp(0.08em, 0.28vw, 0.13em);
-  text-indent: clamp(0.08em, 0.28vw, 0.13em);
+  /* Original setting at the top of the clamp; a phone scales down just far
+     enough to keep all three labels on one line. */
+  font-size: clamp(9px, 2.7vw, 11px);
+  letter-spacing: clamp(0.16em, 0.55vw, 0.24em);
+  text-indent: clamp(0.16em, 0.55vw, 0.24em);
   white-space: nowrap;
   text-transform: uppercase;
   padding: 10px 2px 12px;
@@ -66,7 +67,11 @@
      arc endpoints  x = 0.23 / 0.77,  y = 0.77  (the stroke stops there — the
      bottom of the ring is open, which is where the task banner lives) */
 .dial {
-  --dial: min(80vw, 42vh, 440px);
+  /* Everything above and below the dial — header, nav, controls, laps, footer,
+     the gaps between them — is a fixed stack about 400px tall, not a fraction of
+     the viewport, so the height budget is subtracted rather than scaled. A flat
+     vh cap either overflowed short windows or wasted a roomy one. */
+  --dial: min(80vw, calc(100dvh - 400px - var(--safe-top) - var(--safe-bottom)), 440px);
   position: relative;
   flex: none;
   width: var(--dial);
@@ -106,11 +111,11 @@
 }
 .lap-line {
   font-family: var(--font-display);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
   color: var(--t-muted);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   min-height: 12px;
 }
 .timer-display {
@@ -135,9 +140,9 @@
 .state-line {
   margin-top: 12px;
   font-family: var(--font-display);
-  font-size: 9.5px;
-  letter-spacing: 0.22em;
-  text-indent: 0.22em;
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
   min-height: 12px;
 }
 
@@ -164,9 +169,9 @@
 }
 .task-banner-label {
   font-family: var(--font-display);
-  font-size: 8.5px;
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
+  font-size: 6.5px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
   color: var(--t-faint);
   transition: color 0.25s;
 }
@@ -224,9 +229,9 @@
   border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 999px;
   font-family: var(--font-display);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-indent: 0.16em;
+  font-size: 8.5px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
   white-space: nowrap;
   color: var(--accent-ink);
   animation: task-nudge 3.2s ease-in-out infinite;
@@ -322,9 +327,9 @@
 }
 .btn-engine-label {
   font-family: var(--font-display);
-  font-size: 8.5px;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
+  font-size: 8px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
   color: var(--t-muted);
 }
 .btn-engine-state {
@@ -368,8 +373,8 @@
 .today-line {
   font-family: var(--font-display);
   font-size: 8.5px;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
+  letter-spacing: 0.36em;
+  text-indent: 0.36em;
   color: var(--t-muted);
 }
 
@@ -385,7 +390,7 @@
   border-top: 1px solid var(--t-hair);
   font-family: var(--font-display);
   font-size: 8px;
-  letter-spacing: 0.14em;
+  letter-spacing: clamp(0.18em, 0.7vw, 0.3em);
   color: var(--t-muted);
   text-transform: uppercase;
 }

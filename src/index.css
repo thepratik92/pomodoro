@@ -1,10 +1,10 @@
 :root {
-  /* Michroma carries the app's voice: caps-only, geometric, wide. It is the
-     face for every label. What made it unreadable before was not the face but
-     the setting — 6.5px at 0.34em tracking on a 2.2:1 grey. Sizes now floor at
-     8.5px, tracking is roughly halved, and the greys clear 4.5:1, so the letter
-     shapes hold. Michroma is also ~1.7x the width of the UI face per character,
-     which is why label sizes look small next to it and still read large.
+  /* Michroma carries the app's voice: caps-only, geometric, and set wide. The
+     open tracking is the look, not an accident, so sizes and letter-spacing are
+     the original values throughout. What made those labels hard to read was the
+     grey they were painted in, not the type — see --t-muted / --t-faint below.
+     Where the original setting overflowed on a phone the value is a clamp whose
+     maximum is that original, so a wide window renders it unchanged.
      The UI face is for running text and numerals only. */
   --font-display: 'Michroma', 'Segoe UI', sans-serif;
   --font-ui: 'Titillium Web', 'Segoe UI', sans-serif;
