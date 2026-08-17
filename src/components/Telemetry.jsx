@@ -41,7 +41,7 @@ function WeekChart({ days }) {
             ) : (
               <rect x={x} y={H - padB - 2} width={barW} height={2} rx={1} fill="#FF2800" opacity={0.18} />
             )}
-            <text x={x + barW / 2} y={H - 5} textAnchor="middle" fill="var(--t-muted)" style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '.1em' }}>
+            <text x={x + barW / 2} y={H - 5} textAnchor="middle" fill="var(--t-muted)" style={{ fontSize: 9, fontFamily: "'Michroma',sans-serif", letterSpacing: '.1em' }}>
               {labels[idx]}
             </text>
           </g>

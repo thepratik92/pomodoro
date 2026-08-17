@@ -1,7 +1,11 @@
 :root {
-  /* Michroma is a display face: caps-only, geometric, no weight range. It holds
-     up as a logotype but loses its word shapes below ~12px, so everything
-     smaller is set in the UI face at 600. */
+  /* Michroma carries the app's voice: caps-only, geometric, wide. It is the
+     face for every label. What made it unreadable before was not the face but
+     the setting — 6.5px at 0.34em tracking on a 2.2:1 grey. Sizes now floor at
+     8.5px, tracking is roughly halved, and the greys clear 4.5:1, so the letter
+     shapes hold. Michroma is also ~1.7x the width of the UI face per character,
+     which is why label sizes look small next to it and still read large.
+     The UI face is for running text and numerals only. */
   --font-display: 'Michroma', 'Segoe UI', sans-serif;
   --font-ui: 'Titillium Web', 'Segoe UI', sans-serif;
 

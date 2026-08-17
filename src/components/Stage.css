@@ -26,12 +26,11 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: var(--font-ui);
-  font-weight: 600;
-  /* Sized so all three labels stay on one line down to ~340px wide. */
-  font-size: clamp(11px, 2.95vw, 12.5px);
-  letter-spacing: clamp(0.1em, 0.35vw, 0.16em);
-  text-indent: clamp(0.1em, 0.35vw, 0.16em);
+  font-family: var(--font-display);
+  /* Michroma is wide; sized so all three labels stay on one line to ~340px. */
+  font-size: clamp(8.5px, 2.3vw, 10px);
+  letter-spacing: clamp(0.08em, 0.28vw, 0.13em);
+  text-indent: clamp(0.08em, 0.28vw, 0.13em);
   white-space: nowrap;
   text-transform: uppercase;
   padding: 10px 2px 12px;
@@ -106,13 +105,12 @@
   align-items: center;
 }
 .lap-line {
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 11.5px;
+  font-family: var(--font-display);
+  font-size: 9.5px;
   letter-spacing: 0.2em;
   text-indent: 0.2em;
   color: var(--t-muted);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   min-height: 12px;
 }
 .timer-display {
@@ -136,9 +134,8 @@
 }
 .state-line {
   margin-top: 12px;
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 11px;
+  font-family: var(--font-display);
+  font-size: 9.5px;
   letter-spacing: 0.22em;
   text-indent: 0.22em;
   min-height: 12px;
@@ -166,9 +163,8 @@
   z-index: 1;
 }
 .task-banner-label {
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 10px;
+  font-family: var(--font-display);
+  font-size: 8.5px;
   letter-spacing: 0.18em;
   text-indent: 0.18em;
   color: var(--t-faint);
@@ -227,9 +223,8 @@
   padding: 11px 18px;
   border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 999px;
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 11px;
+  font-family: var(--font-display);
+  font-size: 9px;
   letter-spacing: 0.16em;
   text-indent: 0.16em;
   white-space: nowrap;
@@ -326,9 +321,8 @@
   transform: scale(0.965);
 }
 .btn-engine-label {
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 10px;
+  font-family: var(--font-display);
+  font-size: 8.5px;
   letter-spacing: 0.2em;
   text-indent: 0.2em;
   color: var(--t-muted);
@@ -372,11 +366,10 @@
   transition: stroke 0.4s;
 }
 .today-line {
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
+  font-family: var(--font-display);
+  font-size: 8.5px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
   color: var(--t-muted);
 }
 
@@ -390,10 +383,9 @@
   gap: 8px 16px;
   padding: 14px 20px calc(18px + var(--safe-bottom));
   border-top: 1px solid var(--t-hair);
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 0.14em;
   color: var(--t-muted);
   text-transform: uppercase;
 }
