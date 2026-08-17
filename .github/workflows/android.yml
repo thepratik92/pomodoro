@@ -72,11 +72,22 @@ jobs:
             exit 0
           fi
 
+          # Shape of the stored secret, so a bad value is identifiable without
+          # ever printing it. Lengths and counts only.
+          CLEAN=$(printf '%s' "$KEYSTORE_B64" | tr -d '\r\n\t ')
+          STRAY=$(printf '%s' "$CLEAN" | tr -d 'A-Za-z0-9+/=' | wc -c)
+          echo "secret length: ${#KEYSTORE_B64}"
+          echo "after stripping whitespace: ${#CLEAN}"
+          echo "characters outside the base64 alphabet: $STRAY"
+          echo "length divisible by 4: $(( ${#CLEAN} % 4 == 0 ? 1 : 0 ))"
+
           # Strip CR/LF and stray whitespace: a secret pasted from Windows or
           # from a wrapped file carries characters base64 -d rejects outright.
-          if ! printf '%s' "$KEYSTORE_B64" | tr -d '\r\n\t ' | base64 -d > "$RUNNER_TEMP/release.jks" 2>/dev/null; then
+          if ! printf '%s' "$CLEAN" | base64 -d > "$RUNNER_TEMP/release.jks" 2>/dev/null; then
             echo "::error::ANDROID_KEYSTORE_BASE64 is not valid base64 even after stripping whitespace."
-            echo "::error::Re-copy it: the paste is probably truncated, or the clipboard held something else."
+            echo "::error::Expected length is about 3616 for this keystore. Compare against the"
+            echo "::error::numbers above: a different length means the stored secret is stale or"
+            echo "::error::truncated; stray characters mean the clipboard held something else."
             exit 1
           fi
 
