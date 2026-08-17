@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cold-start window background. Replaces Capacitor's stock blue mark on white,
+     which both showed the wrong logo and flashed white before the app painted.
+     The solid matches the icon artwork's ground, so the mark reads as floating
+     on the background rather than sitting on a visible tile. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/ic_launcher_background" />
+        </shape>
+    </item>
+    <item android:gravity="center">
+        <bitmap
+            android:gravity="center"
+            android:src="@mipmap/ic_launcher_foreground" />
+    </item>
+</layer-list>

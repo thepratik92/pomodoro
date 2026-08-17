@@ -37,15 +37,14 @@
   border-bottom: 1px solid var(--t-hair);
 }
 .picker-title {
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-size: 12px;
   letter-spacing: 0.4em;
-  text-indent: 0.4em;
   color: var(--t-text);
 }
 .picker-subtitle {
   margin-top: 6px;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 13px;
   color: var(--t-muted);
 }
@@ -62,10 +61,9 @@
   padding-right: 8px;
 }
 .picker-section-label {
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-size: 8px;
   letter-spacing: 0.32em;
-  text-indent: 0.32em;
   color: var(--t-faint);
   padding: 14px 0 4px;
 }
@@ -114,7 +112,7 @@
 }
 .picker-item-text {
   flex: 1;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 15px;
   line-height: 1.4;
   color: var(--t-text);
@@ -122,7 +120,7 @@
 }
 .picker-item-hint {
   flex: none;
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-size: 7px;
   letter-spacing: 0.22em;
   color: var(--t-faint);
@@ -138,10 +136,9 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-size: 8.5px;
   letter-spacing: 0.3em;
-  text-indent: 0.3em;
   color: var(--t-faint);
   padding: 8px 0 2px;
   transition: color 0.25s;

@@ -1,9 +1,14 @@
 .app-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  /* Side insets belong to the shell; top and bottom are absorbed by the header
+     and footer so the background still runs edge to edge behind the bars. */
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 .ambient {
@@ -19,8 +24,8 @@
 .undock-btn {
   display: grid;
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: calc(10px + var(--safe-top));
+  right: calc(10px + var(--safe-right));
   z-index: 30;
   width: 34px;
   height: 34px;

@@ -294,8 +294,18 @@ export function useTempo() {
   latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef };
 
   useEffect(() => {
+    const theme = state.settings.theme || 'dark';
     document.documentElement.setAttribute('data-mode', state.mode);
-    document.documentElement.setAttribute('data-theme', state.settings.theme || 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', { light: '#f5f5f2', sepia: '#f1e7d2' }[theme] || '#060607');
+    // The app draws behind the Android system bars, so the bar icons have to
+    // follow the theme or they vanish into a matching background.
+    try {
+      window.TempoSystemBars?.setLightBackground(theme !== 'dark');
+    } catch {
+      /* web build, or an older shell without the interface */
+    }
   }, [state.mode, state.settings.theme]);
 
   useEffect(() => {

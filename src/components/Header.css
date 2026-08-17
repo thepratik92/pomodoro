@@ -1,25 +1,26 @@
 .topbar {
   width: 100%;
-  display: flex;
+  /* Three tracks, not absolute icons over a centered wordmark: the equal 1fr
+     side tracks keep the brand optically centered while the column gap
+     guarantees clearance the icons can never eat into. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 22px 28px 18px;
+  column-gap: clamp(12px, 4vw, 28px);
+  padding: calc(18px + var(--safe-top)) clamp(10px, 3vw, 20px) 16px;
   border-bottom: 1px solid var(--t-hair);
 }
 
 .topbar-side {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 2px;
 }
 .topbar-side--left {
-  left: 20px;
+  justify-self: start;
 }
 .topbar-side--right {
-  right: 20px;
+  justify-self: end;
 }
 
 .icon-btn {
@@ -54,12 +55,26 @@
   height: 19px;
 }
 
+/* Narrow phones: the right cluster is three buttons wide, so it gives back a
+   little room rather than crowding the wordmark. */
+@media (max-width: 400px) {
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .icon-svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
 .brand {
+  min-width: 0;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 .brand-mark {
   width: 17px;
@@ -67,17 +82,25 @@
   display: block;
 }
 .brand-title {
-  font-family: 'Michroma', sans-serif;
-  font-size: 17px;
-  letter-spacing: 0.55em;
-  text-indent: 0.55em;
+  font-family: var(--font-display);
+  /* Tracking scales with the type: at phone widths the wide setting is what
+     pushed the wordmark into the icons. */
+  font-size: clamp(14px, 4.2vw, 17px);
+  letter-spacing: clamp(0.34em, 1.4vw, 0.55em);
+  text-indent: clamp(0.34em, 1.4vw, 0.55em);
+  line-height: 1.1;
+  white-space: nowrap;
   color: var(--t-text);
 }
 .brand-subtitle {
-  margin-top: 1px;
-  font-family: 'Michroma', sans-serif;
-  font-size: 9px;
-  letter-spacing: 0.42em;
-  text-indent: 0.42em;
+  margin-top: 3px;
+  /* Kept in the display face — it is the second line of the logotype lockup,
+     not a content label. */
+  font-family: var(--font-display);
+  font-size: clamp(8px, 2.3vw, 9.5px);
+  letter-spacing: clamp(0.26em, 0.9vw, 0.36em);
+  text-indent: clamp(0.26em, 0.9vw, 0.36em);
+  line-height: 1.1;
+  white-space: nowrap;
   color: var(--t-muted);
 }

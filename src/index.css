@@ -1,12 +1,27 @@
 :root {
+  /* Michroma carries the app's voice: caps-only, geometric, and set wide. The
+     open tracking is the look, not an accident, so sizes and letter-spacing are
+     the original values throughout. What made those labels hard to read was the
+     grey they were painted in, not the type — see --t-muted / --t-faint below.
+     Where the original setting overflowed on a phone the value is a clamp whose
+     maximum is that original, so a wide window renders it unchanged.
+     The UI face is for running text and numerals only. */
+  --font-display: 'Michroma', 'Segoe UI', sans-serif;
+  --font-ui: 'Titillium Web', 'Segoe UI', sans-serif;
+
   --accent-focus: #ff2800;
   --accent: var(--accent-focus);
+  /* Accent as text on the page background — pure accent is fine on black but
+     drops under 3:1 on the light and sepia grounds. */
+  --accent-ink: var(--accent);
 
   --t-bg: #060607;
   --t-panel: #0d0d10;
   --t-text: #e9eaec;
-  --t-muted: #787d86;
-  --t-faint: #43474f;
+  /* --t-muted and --t-faint both carry real label text, so both clear 4.5:1
+     against their theme background; hierarchy comes from the gap between them. */
+  --t-muted: #9aa0a9;
+  --t-faint: #757a83;
   --t-hair: rgba(255, 255, 255, 0.08);
   --t-hair2: rgba(255, 255, 255, 0.14);
   --t-track: rgba(255, 255, 255, 0.055);
@@ -17,6 +32,9 @@
   --t-knob: #9a9ea6;
   --t-eng1: #1b1b1f;
   --t-eng2: #0b0b0e;
+  /* Inner shade under the engine button's bezel. Tuned for a dark housing; the
+     light grounds need far less or the button reads as a glossy sphere. */
+  --t-engshade: rgba(0, 0, 0, 0.55);
   --t-btn: rgba(255, 255, 255, 0.04);
 }
 
@@ -36,8 +54,9 @@ html[data-theme='light'] {
   --t-bg: #f5f5f2;
   --t-panel: #ffffff;
   --t-text: #1b1c1f;
-  --t-muted: #6b7078;
-  --t-faint: #a9adb4;
+  --t-muted: #565b63;
+  --t-faint: #696e76;
+  --accent-ink: color-mix(in srgb, var(--accent) 78%, #000);
   --t-hair: rgba(0, 0, 0, 0.09);
   --t-hair2: rgba(0, 0, 0, 0.16);
   --t-track: rgba(0, 0, 0, 0.07);
@@ -48,6 +67,7 @@ html[data-theme='light'] {
   --t-knob: #8a8f96;
   --t-eng1: #ffffff;
   --t-eng2: #e9e9e4;
+  --t-engshade: rgba(0, 0, 0, 0.1);
   --t-btn: rgba(0, 0, 0, 0.04);
 }
 
@@ -55,8 +75,9 @@ html[data-theme='sepia'] {
   --t-bg: #f1e7d2;
   --t-panel: #f9f1df;
   --t-text: #3d3227;
-  --t-muted: #8a7a62;
-  --t-faint: #b7a98c;
+  --t-muted: #6d5f4a;
+  --t-faint: #756751;
+  --accent-ink: color-mix(in srgb, var(--accent) 78%, #000);
   --t-hair: rgba(93, 74, 43, 0.15);
   --t-hair2: rgba(93, 74, 43, 0.25);
   --t-track: rgba(93, 74, 43, 0.12);
@@ -67,6 +88,7 @@ html[data-theme='sepia'] {
   --t-knob: #8a7a62;
   --t-eng1: #fbf5e7;
   --t-eng2: #e7dac0;
+  --t-engshade: rgba(93, 74, 43, 0.14);
   --t-btn: rgba(93, 74, 43, 0.06);
 }
 
@@ -79,11 +101,20 @@ body {
   height: 100%;
 }
 
+:root {
+  /* Zero on the web, the system bars on Android. Every edge of the shell reads
+     these rather than hard-coding a phone's chrome. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
 body {
   margin: 0;
   background: var(--t-bg);
   color: var(--t-text);
-  font-family: 'Titillium Web', 'Segoe UI', sans-serif;
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   transition:
@@ -93,6 +124,7 @@ body {
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 a {
