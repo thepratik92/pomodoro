@@ -64,15 +64,37 @@ jobs:
       - name: Decode release keystore
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STOREPASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ]; then
-            printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
-            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
-            echo "Release keystore decoded."
-          else
+          if [ -z "$KEYSTORE_B64" ]; then
             echo "::warning::No ANDROID_KEYSTORE_BASE64 secret set. The APK will be UNSIGNED,"
             echo "::warning::which Android refuses to install, and Google Sign-In will not work."
+            exit 0
           fi
+
+          # Strip CR/LF and stray whitespace: a secret pasted from Windows or
+          # from a wrapped file carries characters base64 -d rejects outright.
+          if ! printf '%s' "$KEYSTORE_B64" | tr -d '\r\n\t ' | base64 -d > "$RUNNER_TEMP/release.jks" 2>/dev/null; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not valid base64 even after stripping whitespace."
+            echo "::error::Re-copy it: the paste is probably truncated, or the clipboard held something else."
+            exit 1
+          fi
+
+          # A partial paste decodes without error but yields a broken keystore,
+          # which would otherwise surface as an obscure Gradle signing failure.
+          if ! keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$STOREPASS" > /tmp/ks.txt 2>&1; then
+            echo "::error::Decoded, but keytool cannot open the keystore. Either the base64 is"
+            echo "::error::incomplete or ANDROID_KEYSTORE_PASSWORD does not match. keytool said:"
+            sed 's/^/    /' /tmp/ks.txt | head -5
+            exit 1
+          fi
+
+          echo "Keystore OK ($(stat -c%s "$RUNNER_TEMP/release.jks") bytes)."
+          # Printed so it can be checked against the fingerprint registered in
+          # Firebase — a mismatch here is why Google Sign-In fails at runtime.
+          keytool -list -v -keystore "$RUNNER_TEMP/release.jks" -storepass "$STOREPASS" 2>/dev/null \
+            | grep -E "Alias name:|SHA1:" || true
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Build release APK
         working-directory: android
