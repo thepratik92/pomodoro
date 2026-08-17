@@ -14,14 +14,14 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
@@ -34,6 +34,23 @@ jobs:
       # stale SW cache would keep serving them after an update.
       - name: Build web assets and sync to Android
         run: npm run build:android
+
+      - name: Environment report
+        run: |
+          echo "node $(node -v) / npm $(npm -v)"
+          java -version 2>&1
+          echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
+          echo "--- google-services.json ---"
+          if [ -f android/app/google-services.json ]; then
+            echo "present"
+            grep -q '"client_type": *1' android/app/google-services.json \
+              && echo "contains Android OAuth client (client_type 1)" \
+              || echo "::warning::No client_type 1 — SHA-1 fingerprint was likely not registered before download."
+          else
+            echo "MISSING"
+          fi
+          echo "--- web assets synced into APK ---"
+          ls android/app/src/main/assets/public/ | head
 
       - name: Check Firebase Android config is present
         run: |
@@ -63,7 +80,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - uses: actions/upload-artifact@v4
         with:
