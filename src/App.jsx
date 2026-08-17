@@ -13,7 +13,7 @@ import Setup from './components/Setup';
 
 export default function App() {
   const tempo = useTempo();
-  const { running, panel, docked, narrow, days, stats, sync, settings, draft, todos } = tempo;
+  const { running, panel, docked, narrow, days, stats, sync, settings, draft, todos, uid, userEmail } = tempo;
 
   const effPanel = docked ? null : panel;
   const chromeVisible = !docked;
@@ -116,6 +116,10 @@ export default function App() {
         open={effPanel === 'setup'}
         onProgress={onSetupProgress}
         settings={settings}
+        uid={uid}
+        userEmail={userEmail}
+        onSignIn={tempo.signIn}
+        onSignOut={tempo.signOut}
         onClose={tempo.closePanels}
         onStepSetting={tempo.stepSetting}
         onToggleSetting={tempo.toggleSetting}

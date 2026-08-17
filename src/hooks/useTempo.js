@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useReducer, useRef } from 'react';
 import { dayKey, shiftDays } from '../utils/dateKeys';
+import { auth, db, googleProvider } from '../services/firebase';
+import { onAuthStateChanged, signInWithPopup, signOut as fbSignOut } from 'firebase/auth';
+import { ref, onValue, set } from 'firebase/database';
 
 const STORAGE_KEY = 'tempo-data';
 const SAVE_DEBOUNCE_MS = 400;
@@ -41,6 +44,8 @@ const initialState = {
   sync: 'off',
   docked: false,
   narrow: typeof window !== 'undefined' ? window.innerWidth < NARROW_BREAKPOINT : false,
+  uid: null,
+  userEmail: null,
 };
 
 function patchReducer(state, patch) {
@@ -61,6 +66,8 @@ export function useTempo() {
   const audioCtxRef = useRef(null);
   const loadedRef = useRef(false);
   const mountedNarrowCheckedRef = useRef(false);
+  const fbUnsubRef = useRef(null);
+  const suppressSaveRef = useRef(false);
 
   const durMs = (mode) => state.settings[mode] * 60000;
   const remainingMs = state.running ? Math.max(0, endAtRef.current - Date.now()) : state.remaining;
@@ -246,6 +253,9 @@ export function useTempo() {
       }),
     }));
 
+  const signIn = () => signInWithPopup(auth, googleProvider).catch((e) => console.error('Sign-in failed:', e));
+  const signOut = () => fbSignOut(auth).catch((e) => console.error('Sign-out failed:', e));
+
   const stepSetting = (key, dir) => {
     const def = STEPPER_DEFS[key];
     setState((s) => {
@@ -267,7 +277,7 @@ export function useTempo() {
   // Keep latest imperative handlers reachable from persistent listeners
   // (interval, keydown) without re-subscribing every render.
   const latestRef = useRef({});
-  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef };
+  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef, suppressSaveRef };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-mode', state.mode);
@@ -323,6 +333,79 @@ export function useTempo() {
     return () => window.removeEventListener('keydown', keyH);
   }, []);
 
+  // Firebase auth state
+  useEffect(() => {
+    return onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setState({ uid: user.uid, userEmail: user.email || user.displayName || null });
+      } else {
+        setState({ uid: null, userEmail: null, sync: window.localStorage ? 'local' : 'off' });
+        if (fbUnsubRef.current) { fbUnsubRef.current(); fbUnsubRef.current = null; }
+      }
+    });
+  }, []);
+
+  // Firebase live sync — re-subscribes whenever uid changes (sign in / out)
+  useEffect(() => {
+    if (fbUnsubRef.current) { fbUnsubRef.current(); fbUnsubRef.current = null; }
+    if (!state.uid) return;
+
+    const dataRef = ref(db, `users/${state.uid}/tempo`);
+    let initialFired = false;
+
+    const applySnapshot = (d) => {
+      if (!d) return;
+      const l = latestRef.current;
+      l.suppressSaveRef.current = true;
+      setTimeout(() => { l.suppressSaveRef.current = false; }, SAVE_DEBOUNCE_MS + 100);
+      setState((s) => {
+        const patch = {};
+        if (Array.isArray(d.todos)) patch.todos = d.todos.slice(0, 80).map((t) => ({ ...t, bucket: BUCKETS.includes(t.bucket) ? t.bucket : 'today' }));
+        if (d.days && typeof d.days === 'object') patch.days = d.days;
+        if (d.settings) patch.settings = { ...DEFAULT_SETTINGS, ...d.settings };
+        if ('currentTaskId' in d) patch.currentTaskId = d.currentTaskId ?? null;
+        if (d.mode && ['focus', 'short', 'long'].includes(d.mode)) patch.mode = d.mode;
+        if (typeof d.focusInCycle === 'number') patch.focusInCycle = d.focusInCycle;
+        if (d.running && typeof d.endAt === 'number' && d.endAt > Date.now()) {
+          l.endAtRef.current = d.endAt;
+          patch.running = true;
+          patch.remaining = Math.max(0, d.endAt - Date.now());
+        } else if (!s.running) {
+          patch.running = false;
+          if (typeof d.remaining === 'number') patch.remaining = d.remaining;
+        }
+        return patch;
+      });
+    };
+
+    fbUnsubRef.current = onValue(dataRef, (snap) => {
+      const d = snap.val();
+      if (!initialFired) {
+        initialFired = true;
+        if (d) {
+          applySnapshot(d);
+        } else {
+          // No cloud data yet — push our local state up
+          const l = latestRef.current;
+          const s = l.state;
+          set(dataRef, {
+            v: 2, updatedAt: Date.now(),
+            days: s.days, todos: s.todos, settings: s.settings,
+            currentTaskId: s.currentTaskId, mode: s.mode,
+            running: s.running, endAt: l.endAtRef.current,
+            focusInCycle: s.focusInCycle, remaining: s.remaining,
+          }).catch(console.error);
+        }
+        return;
+      }
+      applySnapshot(d);
+    });
+
+    setState({ sync: 'cloud' });
+    return () => { if (fbUnsubRef.current) { fbUnsubRef.current(); fbUnsubRef.current = null; } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.uid]);
+
   // Load persisted data once on mount.
   useEffect(() => {
     try {
@@ -360,30 +443,36 @@ export function useTempo() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Debounced persistence whenever meaningful data changes.
+  // Debounced persistence — localStorage always, Firebase when signed in.
   useEffect(() => {
     if (!loadedRef.current) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
+    saveTimerRef.current = setTimeout(async () => {
+      // localStorage (always, as offline backup)
       try {
-        const payload = JSON.stringify({
-          v: 2,
-          days: state.days,
-          todos: state.todos,
-          settings: state.settings,
-          currentTaskId: state.currentTaskId,
-        });
+        const lsPayload = JSON.stringify({ v: 2, days: state.days, todos: state.todos, settings: state.settings, currentTaskId: state.currentTaskId });
         if (window.localStorage) {
-          window.localStorage.setItem(STORAGE_KEY, payload);
-          setState({ sync: 'local' });
+          window.localStorage.setItem(STORAGE_KEY, lsPayload);
+          if (!state.uid) setState({ sync: 'local' });
         }
-      } catch {
-        setState({ sync: 'off' });
+      } catch { if (!state.uid) setState({ sync: 'off' }); }
+
+      // Firebase (when signed in and not suppressing to avoid echo)
+      if (state.uid && !suppressSaveRef.current) {
+        try {
+          await set(ref(db, `users/${state.uid}/tempo`), {
+            v: 2, updatedAt: Date.now(),
+            days: state.days, todos: state.todos, settings: state.settings,
+            currentTaskId: state.currentTaskId, mode: state.mode,
+            running: state.running, endAt: endAtRef.current,
+            focusInCycle: state.focusInCycle, remaining: state.remaining,
+          });
+        } catch (err) { console.error('Firebase sync failed:', err); }
       }
     }, SAVE_DEBOUNCE_MS);
     return () => clearTimeout(saveTimerRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.days, state.todos, state.settings, state.currentTaskId]);
+  }, [state.days, state.todos, state.settings, state.currentTaskId, state.mode, state.running, state.remaining, state.focusInCycle, state.uid]);
 
   useEffect(() => clearAuto, []);
 
@@ -439,5 +528,7 @@ export function useTempo() {
     pickTask,
     addTaskAndFocus,
     startWithoutTask,
+    signIn,
+    signOut,
   };
 }
