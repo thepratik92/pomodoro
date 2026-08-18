@@ -71,6 +71,24 @@ const line3 = await page.textContent('.task-banner');
 if (!line3.includes('SET FOCUS TASK')) throw new Error('done task still on dial: ' + line3);
 console.log('done task clears dial line: OK');
 
+// 8. Auto-start must run the NEXT session's duration, not the one that just
+//    ended. Driven through Skip so it takes seconds instead of a full stint.
+await page.click('button[aria-label="Open set-up"]');
+await page.click('.setup-row:has-text("AUTO-START NEXT") .switch');
+await page.click('button[aria-label="Close set-up"]');
+await page.waitForTimeout(500); // panel spring settles, scrim stops catching clicks
+await page.click('button[aria-label="Reset session"]');
+await page.click('button[aria-label="Skip to next session"]');
+await page.waitForTimeout(3000); // auto-start fires at 1400ms, then let it visibly tick
+const engine3 = await page.textContent('.btn-engine-state');
+if (engine3 !== 'PAUSE') throw new Error('auto-start did not start the next session: ' + engine3);
+const autoClock = (await page.textContent('.timer-display')).replace(/\s/g, '');
+const autoMins = parseInt(autoClock.split(':')[0], 10);
+// The short break is 5 min and has now been running long enough to tick, so a
+// reading of 05 or more means it inherited the focus stint's 25-minute clock.
+if (!(autoMins < 5)) throw new Error('auto-started break has the wrong duration: ' + autoClock + ' (expected under 05:00)');
+console.log('auto-start uses the next session duration: OK');
+
 if (errors.length) throw new Error('browser errors: ' + errors.join(' | '));
 console.log('ALL SMOKE TESTS PASSED');
 await browser.close();

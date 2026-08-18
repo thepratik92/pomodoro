@@ -145,7 +145,11 @@ export function useTempo() {
     if (state.settings.autoStart) {
       autoTimerRef.current = setTimeout(() => {
         autoTimerRef.current = null;
-        startRun();
+        // Through latestRef, not this closure. The setState above re-renders
+        // with the next mode and its duration; the startRun captured here
+        // still holds the mode and remaining of the stint that just ended, and
+        // would run the break for the focus stint's length.
+        latestRef.current.startRun();
       }, AUTO_START_DELAY_MS);
     }
   };
@@ -291,7 +295,7 @@ export function useTempo() {
   // Keep latest imperative handlers reachable from persistent listeners
   // (interval, keydown) without re-subscribing every render.
   const latestRef = useRef({});
-  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef };
+  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, startRun, endAtRef };
 
   useEffect(() => {
     const theme = state.settings.theme || 'dark';
