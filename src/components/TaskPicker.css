@@ -83,9 +83,14 @@
     border-color 0.2s,
     background 0.2s;
 }
-.picker-item:hover {
-  border-color: var(--t-hair2);
-  background: var(--t-btn);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .picker-item:hover {
+    border-color: var(--t-hair2);
+    background: var(--t-btn);
+  }
 }
 .picker-item:active {
   transform: scale(0.985);
@@ -104,11 +109,20 @@
   border-radius: 50%;
   border: 1px solid var(--t-hair2);
 }
-.picker-item:hover .picker-item-dot,
 .picker-item--current .picker-item-dot {
   background: var(--accent);
   border-color: var(--accent);
   box-shadow: 0 0 7px var(--glow);
+}
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .picker-item:hover .picker-item-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 7px var(--glow);
+  }
 }
 .picker-item-text {
   flex: 1;
@@ -127,8 +141,13 @@
   opacity: 0;
   transition: opacity 0.2s;
 }
-.picker-item:hover .picker-item-hint {
-  opacity: 1;
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .picker-item:hover .picker-item-hint {
+    opacity: 1;
+  }
 }
 .picker-skip {
   margin-top: 14px;
@@ -143,6 +162,14 @@
   padding: 8px 0 2px;
   transition: color 0.25s;
 }
-.picker-skip:hover {
-  color: var(--t-text);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .picker-skip:hover {
+    color: var(--t-text);
+  }
+}
+.picker-skip:active {
+  opacity: 0.6;
 }

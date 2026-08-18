@@ -27,8 +27,13 @@
     color 0.2s,
     border-color 0.2s;
 }
-.bucket-chip:hover {
-  color: var(--t-text);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .bucket-chip:hover {
+    color: var(--t-text);
+  }
 }
 .bucket-chip--on {
   border-color: var(--accent);
@@ -67,9 +72,14 @@
     border-color 0.2s;
   padding: 0;
 }
-.todo-add-btn:hover {
-  color: var(--t-text);
-  border-color: var(--t-hair2);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .todo-add-btn:hover {
+    color: var(--t-text);
+    border-color: var(--t-hair2);
+  }
 }
 
 .todo-list {
@@ -141,9 +151,14 @@
     color 0.2s;
   padding: 0;
 }
-.todo-move:hover {
-  opacity: 1;
-  color: var(--t-text);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .todo-move:hover {
+    opacity: 1;
+    color: var(--t-text);
+  }
 }
 .todo-move svg {
   width: 11px;
@@ -194,9 +209,14 @@
     color 0.2s;
   padding: 0;
 }
-.todo-del:hover {
-  opacity: 1;
-  color: var(--t-text);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .todo-del:hover {
+    opacity: 1;
+    color: var(--t-text);
+  }
 }
 .todo-del svg {
   width: 11px;
@@ -216,8 +236,13 @@
   padding: 8px 0;
   transition: color 0.25s;
 }
-.clear-done-btn:hover {
-  color: var(--t-text);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .clear-done-btn:hover {
+    color: var(--t-text);
+  }
 }
 
 /* Instant press feedback (respond on pointer-down) */

@@ -131,13 +131,50 @@ a {
   color: #ff2800;
   text-decoration: none;
 }
-a:hover {
-  color: #ff6a50;
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  a:hover {
+    color: #ff6a50;
+  }
 }
 
 button,
 input {
   font-family: inherit;
+}
+
+/* ---- Touch: the press is the feedback ---- */
+
+/* Android's WebView paints its own translucent box on tap, squared off and
+   ignoring the element's radius, so every round button got a grey rectangle
+   over it. The :active states are the feedback; the platform's guess is not
+   wanted on top of them. Desktop never drew it, which is why this only ever
+   showed up on the phone. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  /* No waiting on the input path: manipulation drops the double-tap-to-zoom
+     delay, so :active lands on the press rather than after it. */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Long-pressing a control should not offer to select or share its label. */
+  -webkit-touch-callout: none;
+}
+
+/* A tapped button keeps focus on Android, so an unconditional ring leaves an
+   outline sitting on the last thing touched. :focus-visible restricts it to
+   focus that arrived by keyboard, which is who the ring is for. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+button:focus:not(:focus-visible) {
+  outline: none;
 }
 
 @keyframes breathe {

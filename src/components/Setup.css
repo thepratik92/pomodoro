@@ -46,9 +46,14 @@
     border-color 0.2s;
   padding: 0;
 }
-.stepper-btn:hover {
-  color: var(--t-text);
-  border-color: var(--t-hair2);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .stepper-btn:hover {
+    color: var(--t-text);
+    border-color: var(--t-hair2);
+  }
 }
 .stepper-val {
   min-width: 42px;
@@ -102,8 +107,13 @@
     color 0.2s,
     border-color 0.2s;
 }
-.theme-btn:hover {
-  color: var(--t-text) !important;
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .theme-btn:hover {
+    color: var(--t-text) !important;
+  }
 }
 
 .setup-note {
@@ -167,7 +177,12 @@ html[data-theme='dark'] .sync-badge[data-on='true'] {
   transition: border-color 0.2s, color 0.2s;
   white-space: nowrap;
 }
-.sync-btn:hover { border-color: var(--t-hair2); color: var(--t-text); }
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .sync-btn:hover { border-color: var(--t-hair2); color: var(--t-text); }
+}
 .sync-btn--google { border-color: var(--t-hair2); }
 .sync-btn:active { transform: scale(0.95); transition: transform 80ms ease-out; }
 

@@ -40,9 +40,18 @@
     border-color 0.25s;
   padding: 0;
 }
-.undock-btn:hover {
-  color: var(--t-text);
-  border-color: var(--t-hair2);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .undock-btn:hover {
+    color: var(--t-text);
+    border-color: var(--t-hair2);
+  }
+}
+.undock-btn:active {
+  transform: scale(0.92);
+  transition: transform 100ms ease-out;
 }
 .undock-btn svg {
   width: 17px;
