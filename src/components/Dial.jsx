@@ -1,27 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { DIAL_ARC_PATH, dialPoint, dialTicks } from './dial';
 
 function buildTicks() {
-  const lines = [];
-  for (let n = 0; n <= 54; n++) {
-    const f = n / 54;
-    const a = ((135 + f * 270) * Math.PI) / 180;
-    const major = n % 5 === 0;
-    const len = major ? 13 : 7;
-    const red = f > 0.88;
-    lines.push(
-      <line
-        key={n}
-        x1={(220 + Math.cos(a) * (207 - len)).toFixed(2)}
-        y1={(220 + Math.sin(a) * (207 - len)).toFixed(2)}
-        x2={(220 + Math.cos(a) * 207).toFixed(2)}
-        y2={(220 + Math.sin(a) * 207).toFixed(2)}
-        stroke={red ? '#FF2800' : major ? 'var(--t-tickmajor)' : 'var(--t-tick)'}
-        strokeWidth={major ? 2 : 1}
-        opacity={red ? 0.85 : 1}
-      />
-    );
-  }
-  return lines;
+  return dialTicks().map((t) => (
+    <line
+      key={t.n}
+      x1={t.x1.toFixed(2)}
+      y1={t.y1.toFixed(2)}
+      x2={t.x2.toFixed(2)}
+      y2={t.y2.toFixed(2)}
+      stroke={t.red ? '#FF2800' : t.major ? 'var(--t-tickmajor)' : 'var(--t-tick)'}
+      strokeWidth={t.major ? 2 : 1}
+      opacity={t.red ? 0.85 : 1}
+    />
+  ));
 }
 
 export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle, laps, currentTask, onTaskClick }) {
@@ -50,12 +42,12 @@ export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle
   }, [taskText]);
 
   const p = Math.min(1, Math.max(0, 1 - remainingMs / totalMs));
-  const a = ((135 + p * 270) * Math.PI) / 180;
   const totalSec = Math.ceil(remainingMs / 1000);
   const paused = !running && remainingMs < totalMs;
 
-  const nx = (220 + Math.cos(a) * 168).toFixed(2);
-  const ny = (220 + Math.sin(a) * 168).toFixed(2);
+  const needle = dialPoint(p);
+  const nx = needle.x.toFixed(2);
+  const ny = needle.y.toFixed(2);
   const arcOffset = (100 - p * 100).toFixed(3);
   const arcOpacity = p <= 0.0005 ? 0 : 1;
 
@@ -72,7 +64,7 @@ export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle
       <svg viewBox="0 0 440 440" aria-hidden="true" className="dial-svg">
         <g>{ticks}</g>
         <path
-          d="M 101.2 338.8 A 168 168 0 1 1 338.8 338.8"
+          d={DIAL_ARC_PATH}
           pathLength="100"
           fill="none"
           stroke="var(--t-track)"
@@ -80,7 +72,7 @@ export default function Dial({ mode, running, remainingMs, totalMs, focusInCycle
           strokeLinecap="round"
         ></path>
         <path
-          d="M 101.2 338.8 A 168 168 0 1 1 338.8 338.8"
+          d={DIAL_ARC_PATH}
           pathLength="100"
           fill="none"
           stroke="var(--accent)"

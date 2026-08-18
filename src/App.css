@@ -57,3 +57,18 @@
   width: 17px;
   height: 17px;
 }
+
+/* Mini widget, in-app variant
+   The frame around the widget: fixed to the viewport, above every panel, and
+   positioned purely through transform so dragging never touches layout. Size
+   and position are motion values written by WidgetHost. */
+.widget-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  /* The card's own drag springs move this; hint the compositor. */
+  will-change: transform;
+  /* Pointer tracking must not be stolen by the browser's scroll gestures. */
+  touch-action: none;
+}

@@ -18,6 +18,9 @@ const DEFAULT_SETTINGS = {
   autoStart: false,
   sound: true,
   theme: 'dark',
+  // Mini widget: float in its own always-on-top OS window when the platform
+  // can give us one, rather than as a card inside the app window.
+  widgetPinned: true,
 };
 
 const STEPPER_DEFS = {
@@ -43,7 +46,8 @@ const initialState = {
   days: {},
   draft: '',
   sync: 'off',
-  docked: false,
+  // The mini widget / picture-in-picture timer.
+  widget: false,
   narrow: typeof window !== 'undefined' ? window.innerWidth < NARROW_BREAKPOINT : false,
   uid: null,
   userEmail: null,
@@ -198,6 +202,13 @@ export function useTempo() {
     startRun();
   };
 
+  // The mini widget has no room for the task picker and may be showing while
+  // the main window is buried, so a start there just runs the clock.
+  const toggleRunFromWidget = () => {
+    if (state.running) pauseRun();
+    else startRun();
+  };
+
   const openPicker = (intent) => setState({ picker: intent });
   const closePicker = () => setState({ picker: null });
 
@@ -246,7 +257,14 @@ export function useTempo() {
 
   const setPanel = (panel) => setState({ panel });
   const closePanels = () => setState({ panel: null });
-  const toggleDock = () => setState((s) => ({ docked: !s.docked }));
+
+  // Opening the widget closes whatever panel is over the app, so the click
+  // that pops the timer out doesn't leave a sheet behind on the way back.
+  const openWidget = () => setState({ widget: true, panel: null, picker: null });
+  const closeWidget = () => setState({ widget: false });
+  const toggleWidget = () => setState((s) => (s.widget ? { widget: false } : { widget: true, panel: null, picker: null }));
+  const toggleWidgetPin = () =>
+    setState((s) => ({ settings: { ...s.settings, widgetPinned: !s.settings.widgetPinned } }));
 
   const setDraft = (text) => setState({ draft: text });
   const addTodo = (bucket) => {
@@ -476,6 +494,7 @@ export function useTempo() {
             s.laps = clampNum(s.laps, 2, 8, 4);
             s.autoStart = !!s.autoStart;
             s.sound = s.sound !== false;
+            s.widgetPinned = s.widgetPinned !== false;
             s.theme = ['dark', 'light', 'sepia'].includes(s.theme) ? s.theme : 'dark';
             patch.settings = s;
           }
@@ -619,6 +638,7 @@ export function useTempo() {
     stats,
     currentTask,
     toggleRun,
+    toggleRunFromWidget,
     reset,
     skip,
     setMode,
@@ -626,7 +646,11 @@ export function useTempo() {
     openTelemetry: () => setPanel('telemetry'),
     openSetup: () => setPanel('setup'),
     closePanels,
-    toggleDock,
+    widgetPinned: state.settings.widgetPinned !== false,
+    openWidget,
+    closeWidget,
+    toggleWidget,
+    toggleWidgetPin,
     setDraft,
     addTodo,
     toggleTodo,
