@@ -3,6 +3,7 @@ import { dayKey, shiftDays } from '../utils/dateKeys';
 import { auth, db, signInWithGoogle, signOutEverywhere } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, onValue, set } from 'firebase/database';
+import { ensurePermission, scheduleSessionEnd, cancelSessionEnd } from '../services/notify';
 
 const STORAGE_KEY = 'tempo-data';
 const SAVE_DEBOUNCE_MS = 400;
@@ -67,6 +68,31 @@ function clampNum(v, a, b, fallback) {
   return typeof v === 'number' && isFinite(v) ? Math.min(b, Math.max(a, Math.round(v))) : fallback;
 }
 
+// The cadence step: what the state becomes once the current session ends. Pure,
+// because it is applied from two places — the running timer, and startup, when
+// a session turns out to have elapsed while the app was gone.
+function nextSession(s, countIt) {
+  let fic = s.focusInCycle;
+  let days = s.days;
+  let next;
+  if (s.mode === 'focus') {
+    if (countIt) {
+      const k = dayKey();
+      days = { ...s.days };
+      const e = { ...(days[k] || { m: 0, s: 0 }) };
+      e.m += s.settings.focus;
+      e.s += 1;
+      days[k] = e;
+    }
+    fic++;
+    next = fic >= s.settings.laps ? 'long' : 'short';
+  } else {
+    if (s.mode === 'long') fic = 0;
+    next = 'focus';
+  }
+  return { mode: next, focusInCycle: fic, days, running: false, remaining: s.settings[next] * 60000 };
+}
+
 export function useTempo() {
   const [state, setState] = useReducer(patchReducer, initialState);
 
@@ -121,31 +147,15 @@ export function useTempo() {
   };
 
   const advance = (countIt) => {
-    setState((s) => {
-      let fic = s.focusInCycle;
-      let days = s.days;
-      let next;
-      if (s.mode === 'focus') {
-        if (countIt) {
-          const k = dayKey();
-          days = { ...s.days };
-          const e = { ...(days[k] || { m: 0, s: 0 }) };
-          e.m += s.settings.focus;
-          e.s += 1;
-          days[k] = e;
-        }
-        fic++;
-        next = fic >= s.settings.laps ? 'long' : 'short';
-      } else {
-        if (s.mode === 'long') fic = 0;
-        next = 'focus';
-      }
-      return { mode: next, focusInCycle: fic, days, running: false, remaining: s.settings[next] * 60000 };
-    });
+    setState((s) => nextSession(s, countIt));
     if (state.settings.autoStart) {
       autoTimerRef.current = setTimeout(() => {
         autoTimerRef.current = null;
-        startRun();
+        // Through latestRef, not this closure. The setState above re-renders
+        // with the next mode and its duration; the startRun captured here
+        // still holds the mode and remaining of the stint that just ended, and
+        // would run the break for the focus stint's length.
+        latestRef.current.startRun();
       }, AUTO_START_DELAY_MS);
     }
   };
@@ -161,6 +171,10 @@ export function useTempo() {
     let rem = state.remaining;
     if (rem <= 0) rem = durMs(state.mode);
     endAtRef.current = Date.now() + rem;
+    // Ask once, here, while the app is on screen and the request has obvious
+    // cause. Asking at the moment of backgrounding would show a prompt nobody
+    // is looking at.
+    ensurePermission();
     setState({ running: true, remaining: rem });
   };
 
@@ -291,7 +305,7 @@ export function useTempo() {
   // Keep latest imperative handlers reachable from persistent listeners
   // (interval, keydown) without re-subscribing every render.
   const latestRef = useRef({});
-  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, endAtRef };
+  latestRef.current = { state, toggleRun, reset, skip, closePanels, closePicker, complete, startRun, currentTask, endAtRef };
 
   useEffect(() => {
     const theme = state.settings.theme || 'dark';
@@ -440,6 +454,7 @@ export function useTempo() {
     try {
       const raw = window.localStorage ? window.localStorage.getItem(STORAGE_KEY) : null;
       const patch = { sync: window.localStorage ? 'local' : 'off' };
+      let restoredEndAt = null;
       if (raw) {
         const p = JSON.parse(raw);
         if (p && typeof p === 'object') {
@@ -448,6 +463,10 @@ export function useTempo() {
             ? p.todos.slice(0, 80).map((t) => ({ ...t, bucket: BUCKETS.includes(t.bucket) ? t.bucket : 'today' }))
             : [];
           patch.currentTaskId = typeof p.currentTaskId === 'string' ? p.currentTaskId : null;
+          if (['focus', 'short', 'long'].includes(p.mode)) patch.mode = p.mode;
+          if (typeof p.focusInCycle === 'number') patch.focusInCycle = clampNum(p.focusInCycle, 0, 8, 0);
+          if (typeof p.remaining === 'number' && p.remaining > 0) patch.remaining = p.remaining;
+          if (p.running && typeof p.endAt === 'number') restoredEndAt = p.endAt;
           if (p.settings) {
             const s = { ...DEFAULT_SETTINGS };
             for (const k of Object.keys(s)) if (k in p.settings) s[k] = p.settings[k];
@@ -463,7 +482,23 @@ export function useTempo() {
         }
       }
       setState(patch);
-      setState((s) => (s.running ? {} : { remaining: s.settings[s.mode] * 60000 }));
+      if (restoredEndAt && restoredEndAt > Date.now()) {
+        // Still inside the session — pick it up where the clock really is.
+        endAtRef.current = restoredEndAt;
+        setState({ running: true, remaining: restoredEndAt - Date.now() });
+      } else if (restoredEndAt) {
+        // It ran out while the app was gone. The notification already said so,
+        // so bank the lap and move the cadence on — no chime and no auto-start
+        // at someone who has only just come back.
+        setState((s) => nextSession(s, true));
+      } else {
+        // Not mid-run: keep a paused clock, but never show more than the
+        // current setting allows, since the duration may have changed since.
+        setState((s) => {
+          const full = s.settings[s.mode] * 60000;
+          return { remaining: s.remaining > 0 ? Math.min(s.remaining, full) : full };
+        });
+      }
     } catch {
       setState({ sync: window.localStorage ? 'local' : 'off' });
     } finally {
@@ -479,7 +514,21 @@ export function useTempo() {
     saveTimerRef.current = setTimeout(async () => {
       // localStorage (always, as offline backup)
       try {
-        const lsPayload = JSON.stringify({ v: 2, days: state.days, todos: state.todos, settings: state.settings, currentTaskId: state.currentTaskId });
+        const lsPayload = JSON.stringify({
+          v: 3,
+          days: state.days,
+          todos: state.todos,
+          settings: state.settings,
+          currentTaskId: state.currentTaskId,
+          // The run itself. Without this a session signed out of existence
+          // whenever Android reclaimed the process, while a signed-in user's
+          // run survived in the cloud — the same app behaving two ways.
+          mode: state.mode,
+          focusInCycle: state.focusInCycle,
+          running: state.running,
+          endAt: state.running ? endAtRef.current : null,
+          remaining: state.remaining,
+        });
         if (window.localStorage) {
           window.localStorage.setItem(STORAGE_KEY, lsPayload);
           if (!state.uid) setState({ sync: 'local' });
@@ -508,6 +557,34 @@ export function useTempo() {
     return () => clearTimeout(saveTimerRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.days, state.todos, state.settings, state.currentTaskId, state.mode, state.running, state.remaining, state.focusInCycle, state.uid]);
+
+  // The OS holds the deadline only while the app is off screen; in the
+  // foreground the dial and the chime already do the job, and a banner on top
+  // of them would be noise.
+  useEffect(() => {
+    const sync = () => {
+      const l = latestRef.current;
+      if (document.visibilityState === 'hidden' && l.state.running && l.endAtRef.current > Date.now()) {
+        scheduleSessionEnd({
+          mode: l.state.mode,
+          endAt: l.endAtRef.current,
+          task: l.currentTask ? l.currentTask.text : null,
+        });
+      } else {
+        cancelSessionEnd();
+      }
+    };
+    // On mount the app is on screen, so drop anything a previous launch left
+    // pending — otherwise a relaunch mid-session double-announces the end.
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    // pagehide covers the WebView being torn down without a visibility change.
+    window.addEventListener('pagehide', sync);
+    return () => {
+      document.removeEventListener('visibilitychange', sync);
+      window.removeEventListener('pagehide', sync);
+    };
+  }, []);
 
   useEffect(() => clearAuto, []);
 

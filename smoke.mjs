@@ -71,6 +71,60 @@ const line3 = await page.textContent('.task-banner');
 if (!line3.includes('SET FOCUS TASK')) throw new Error('done task still on dial: ' + line3);
 console.log('done task clears dial line: OK');
 
+// 8. Auto-start must run the NEXT session's duration, not the one that just
+//    ended. Driven through Skip so it takes seconds instead of a full stint.
+await page.click('button[aria-label="Open set-up"]');
+await page.click('.setup-row:has-text("AUTO-START NEXT") .switch');
+await page.click('button[aria-label="Close set-up"]');
+await page.waitForTimeout(500); // panel spring settles, scrim stops catching clicks
+await page.click('button[aria-label="Reset session"]');
+await page.click('button[aria-label="Skip to next session"]');
+await page.waitForTimeout(3000); // auto-start fires at 1400ms, then let it visibly tick
+const engine3 = await page.textContent('.btn-engine-state');
+if (engine3 !== 'PAUSE') throw new Error('auto-start did not start the next session: ' + engine3);
+const autoClock = (await page.textContent('.timer-display')).replace(/\s/g, '');
+const autoMins = parseInt(autoClock.split(':')[0], 10);
+// The short break is 5 min and has now been running long enough to tick, so a
+// reading of 05 or more means it inherited the focus stint's 25-minute clock.
+if (!(autoMins < 5)) throw new Error('auto-started break has the wrong duration: ' + autoClock + ' (expected under 05:00)');
+console.log('auto-start uses the next session duration: OK');
+
+// 9. A session still running at launch resumes on the real clock, rather than
+//    resetting — the process can be reclaimed at any time.
+await page.evaluate(() => {
+  const d = JSON.parse(localStorage.getItem('tempo-data'));
+  Object.assign(d, { mode: 'focus', running: true, endAt: Date.now() + 5 * 60000, focusInCycle: 0 });
+  d.settings.autoStart = false;
+  localStorage.setItem('tempo-data', JSON.stringify(d));
+});
+await page.reload({ waitUntil: 'networkidle' });
+await page.waitForTimeout(1200);
+const resumedEngine = await page.textContent('.btn-engine-state');
+if (resumedEngine !== 'PAUSE') throw new Error('in-flight session did not resume: ' + resumedEngine);
+const resumedClock = (await page.textContent('.timer-display')).replace(/\s/g, '');
+if (!/^0[45]:/.test(resumedClock)) throw new Error('resumed on the wrong clock: ' + resumedClock);
+console.log('in-flight session resumes on launch: OK');
+
+// 10. One that ran out while the app was gone is banked and the cadence moves
+//     on, instead of the lap disappearing.
+await page.evaluate(() => {
+  const d = JSON.parse(localStorage.getItem('tempo-data'));
+  Object.assign(d, { mode: 'focus', running: true, endAt: Date.now() - 60000, focusInCycle: 0, days: {} });
+  d.settings.autoStart = false;
+  localStorage.setItem('tempo-data', JSON.stringify(d));
+});
+await page.reload({ waitUntil: 'networkidle' });
+await page.waitForTimeout(1200);
+const bankedMode = await page.evaluate(() => document.documentElement.getAttribute('data-mode'));
+if (bankedMode !== 'short') throw new Error('elapsed session did not advance the cadence: ' + bankedMode);
+const bankedEngine = await page.textContent('.btn-engine-state');
+if (bankedEngine !== 'START') throw new Error('restore should not start running: ' + bankedEngine);
+await page.waitForTimeout(700); // persistence is debounced
+const banked = JSON.parse(await page.evaluate(() => localStorage.getItem('tempo-data')));
+const entry = Object.values(banked.days)[0];
+if (!entry || entry.s !== 1) throw new Error('lap not banked: ' + JSON.stringify(banked.days));
+console.log('session that elapsed while away is banked on launch: OK');
+
 if (errors.length) throw new Error('browser errors: ' + errors.join(' | '));
 console.log('ALL SMOKE TESTS PASSED');
 await browser.close();
