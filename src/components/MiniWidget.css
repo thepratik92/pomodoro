@@ -101,10 +101,23 @@
   z-index: 3;
   display: flex;
   gap: clamp(1px, 1cqmin, 4px);
-  opacity: 0.4;
+  /* Shown outright: with no pointer there is nothing to reveal it, and a
+     widget you cannot close is a trap. Hover-capable devices get the quieter
+     version that lifts on approach. */
+  opacity: 1;
   transition: opacity 0.22s ease;
 }
-.mw:hover .mw-chrome,
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .mw-chrome {
+    opacity: 0.4;
+  }
+  .mw:hover .mw-chrome {
+    opacity: 1;
+  }
+}
 .mw-chrome:focus-within {
   opacity: 1;
 }
@@ -128,9 +141,14 @@
   width: 62%;
   height: 62%;
 }
-.mw-chrome-btn:hover {
-  color: var(--t-text);
-  background: var(--t-btn);
+/* Hover is a pointer capability, not a universal one. Unguarded, a tapped
+   control on Android keeps its hover styling until something else is
+   touched, so it reads as stuck rather than pressed. */
+@media (hover: hover) {
+  .mw-chrome-btn:hover {
+    color: var(--t-text);
+    background: var(--t-btn);
+  }
 }
 /* Feedback on press, not on release */
 .mw-chrome-btn:active {
@@ -277,11 +295,13 @@
     border-color 0.5s ease,
     transform 0.12s ease;
 }
-.mw-play:hover {
-  box-shadow:
-    inset 0 1px 0 var(--t-hair),
-    inset 0 -6px 12px var(--t-engshade),
-    0 0 24px var(--glow);
+@media (hover: hover) {
+  .mw-play:hover {
+    box-shadow:
+      inset 0 1px 0 var(--t-hair),
+      inset 0 -6px 12px var(--t-engshade),
+      0 0 24px var(--glow);
+  }
 }
 .mw-play:active {
   transform: translate(-50%, -50%) scale(0.94);
@@ -318,9 +338,11 @@
     background 0.22s,
     transform 0.12s ease;
 }
-.mw-skip:hover {
-  color: var(--t-text);
-  background: var(--t-btn);
+@media (hover: hover) {
+  .mw-skip:hover {
+    color: var(--t-text);
+    background: var(--t-btn);
+  }
 }
 .mw-skip:active {
   transform: translateX(-50%) scale(0.9);
@@ -463,13 +485,18 @@
   display: grid;
   place-items: center;
   color: var(--t-faint);
-  opacity: 0.35;
+  opacity: 0.85;
   cursor: nwse-resize;
   touch-action: none;
   transition: opacity 0.2s ease;
 }
-.mw:hover .mw-resize {
-  opacity: 0.9;
+@media (hover: hover) {
+  .mw-resize {
+    opacity: 0.35;
+  }
+  .mw:hover .mw-resize {
+    opacity: 0.9;
+  }
 }
 .mw-resize svg {
   width: 62%;
