@@ -10,13 +10,22 @@ import PitBoard from './components/PitBoard';
 import TaskPicker from './components/TaskPicker';
 import Telemetry from './components/Telemetry';
 import Setup from './components/Setup';
+import WidgetHost from './components/WidgetHost';
+import { pipSupported } from './hooks/usePipWindow';
 
 export default function App() {
   const tempo = useTempo();
-  const { running, panel, docked, narrow, days, stats, sync, settings, draft, todos, uid, userEmail } = tempo;
+  const { running, panel, widget, widgetPinned, narrow, days, stats, sync, settings, draft, todos, uid, userEmail } = tempo;
 
-  const effPanel = docked ? null : panel;
-  const chromeVisible = !docked;
+  // Where the mini widget ends up: its own always-on-top OS window when the
+  // platform offers one and the user has it pinned, otherwise a floating card
+  // inside this window. Only the in-app card displaces the app's own chrome —
+  // a picture-in-picture window leaves the full app exactly as it was.
+  const widgetInApp = widget && !(widgetPinned && pipSupported);
+  const widgetFloatingOut = widget && !widgetInApp;
+
+  const effPanel = widgetInApp ? null : panel;
+  const chromeVisible = !widgetInApp;
   const overlayOpen = Boolean(effPanel && effPanel !== 'board');
 
   // Panel openness as live values (1 = open), fed by the panels' springs and
@@ -44,20 +53,20 @@ export default function App() {
       <Collapse show={chromeVisible}>
         <Header
           onOpenBoard={tempo.openBoard}
-          onToggleDock={tempo.toggleDock}
+          onOpenWidget={tempo.toggleWidget}
           onOpenTelemetry={tempo.openTelemetry}
           onOpenSetup={tempo.openSetup}
         />
       </Collapse>
 
-      <Stage tempo={tempo} lapsVisible={!docked} />
+      <Stage tempo={tempo} lapsVisible={!widgetInApp} />
 
       <Collapse show={chromeVisible}>
         <Footer />
       </Collapse>
 
       <AnimatePresence>
-        {docked && (
+        {widgetFloatingOut && (
           <motion.button
             type="button"
             className="undock-btn"
@@ -65,9 +74,9 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: 'spring', stiffness: 440, damping: 40 }}
-            onClick={tempo.toggleDock}
-            aria-label="Undock widget"
-            title="Undock"
+            onClick={tempo.closeWidget}
+            aria-label="Close the floating mini widget"
+            title="Mini widget is floating on top — click to close it"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="18" x2="12" y2="8"></line>
@@ -124,6 +133,8 @@ export default function App() {
         onStepSetting={tempo.stepSetting}
         onToggleSetting={tempo.toggleSetting}
       />
+
+      <WidgetHost tempo={tempo} />
     </motion.div>
   );
 }

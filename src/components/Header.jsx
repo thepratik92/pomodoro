@@ -1,6 +1,6 @@
 import './Header.css';
 
-export default function Header({ onOpenBoard, onToggleDock, onOpenTelemetry, onOpenSetup }) {
+export default function Header({ onOpenBoard, onOpenWidget, onOpenTelemetry, onOpenSetup }) {
   return (
     <header className="topbar">
       <div className="topbar-side topbar-side--left">
@@ -39,7 +39,13 @@ export default function Header({ onOpenBoard, onToggleDock, onOpenTelemetry, onO
       </div>
 
       <div className="topbar-side topbar-side--right">
-        <button type="button" className="icon-btn" onClick={onToggleDock} aria-label="Dock as widget" title="Dock as widget">
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={onOpenWidget}
+          aria-label="Open mini widget"
+          title="Mini widget — a floating, always-on-top timer"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="icon-svg">
             <line x1="12" y1="3" x2="12" y2="13"></line>
             <polyline points="8 9 12 13 16 9"></polyline>
