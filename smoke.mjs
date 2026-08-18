@@ -247,6 +247,52 @@ if (small.fontPx < 20) throw new Error('clock shrank below the legible floor: ' 
 if (small.row !== 'row') throw new Error('short widget did not switch to the side-by-side layout');
 console.log('widget resizes, re-lays out, and stays legible: OK');
 
+// 19. The sweep has to actually track the clock, and that is easy to break
+//     without touching a single number: progress is drawn by dashing a
+//     pathLength-normalised path, and a non-scaling stroke makes Chrome dash
+//     in device space instead, painting the arc far past where the clock is.
+//     So this checks the painted extent rather than the arithmetic — at 30%
+//     elapsed the sweep must be there a fifth of the way round and gone by
+//     halfway. Hit-testing honours dash gaps, which is what makes it visible
+//     to a test at all.
+const arcPage = await ctx.newPage();
+arcPage.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+await arcPage.addInitScript(() => {
+  delete window.documentPictureInPicture;
+});
+await arcPage.goto(base + '/', { waitUntil: 'networkidle' });
+await arcPage.evaluate(() => {
+  localStorage.setItem('tempo-widget-geo', JSON.stringify({ x: 60, y: 60, w: 320, h: 360 }));
+  const d = JSON.parse(localStorage.getItem('tempo-data') || '{}');
+  d.v = 3;
+  d.mode = 'focus';
+  d.running = false;
+  d.endAt = null;
+  d.settings = { ...(d.settings || {}), focus: 25, autoStart: false, widgetPinned: false };
+  d.remaining = Math.round(25 * 60000 * 0.7); // 30% elapsed
+  localStorage.setItem('tempo-data', JSON.stringify(d));
+});
+await arcPage.reload({ waitUntil: 'networkidle' });
+await arcPage.click('button[aria-label="Open mini widget"]');
+await arcPage.waitForSelector('.widget-card .mw-ring-arc');
+await arcPage.waitForTimeout(400);
+const painted = await arcPage.evaluate(() => {
+  const arc = document.querySelector('.mw-ring-arc');
+  const svg = arc.ownerSVGElement;
+  const total = arc.getTotalLength();
+  const at = (frac) => {
+    const p = arc.getPointAtLength(total * frac);
+    const m = svg.getScreenCTM();
+    const el = document.elementFromPoint(m.a * p.x + m.c * p.y + m.e, m.b * p.x + m.d * p.y + m.f);
+    return el ? el.getAttribute('class') || el.tagName : 'none';
+  };
+  return { clock: document.querySelector('.mw-time').textContent.trim(), fifth: at(0.2), half: at(0.55) };
+});
+if (!/^17:[23]\d$/.test(painted.clock)) throw new Error('arc check did not get the clock it seeded: ' + painted.clock);
+if (painted.fifth !== 'mw-ring-arc') throw new Error('sweep not painted a fifth into a 30%-elapsed lap: ' + painted.fifth);
+if (painted.half === 'mw-ring-arc') throw new Error('sweep painted past the clock — progress is not tracking');
+console.log('sweep is painted to the clock, not past it: OK');
+
 if (errors.length) throw new Error('browser errors: ' + errors.join(' | '));
 console.log('ALL SMOKE TESTS PASSED');
 await browser.close();
