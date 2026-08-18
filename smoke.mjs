@@ -89,6 +89,42 @@ const autoMins = parseInt(autoClock.split(':')[0], 10);
 if (!(autoMins < 5)) throw new Error('auto-started break has the wrong duration: ' + autoClock + ' (expected under 05:00)');
 console.log('auto-start uses the next session duration: OK');
 
+// 9. A session still running at launch resumes on the real clock, rather than
+//    resetting — the process can be reclaimed at any time.
+await page.evaluate(() => {
+  const d = JSON.parse(localStorage.getItem('tempo-data'));
+  Object.assign(d, { mode: 'focus', running: true, endAt: Date.now() + 5 * 60000, focusInCycle: 0 });
+  d.settings.autoStart = false;
+  localStorage.setItem('tempo-data', JSON.stringify(d));
+});
+await page.reload({ waitUntil: 'networkidle' });
+await page.waitForTimeout(1200);
+const resumedEngine = await page.textContent('.btn-engine-state');
+if (resumedEngine !== 'PAUSE') throw new Error('in-flight session did not resume: ' + resumedEngine);
+const resumedClock = (await page.textContent('.timer-display')).replace(/\s/g, '');
+if (!/^0[45]:/.test(resumedClock)) throw new Error('resumed on the wrong clock: ' + resumedClock);
+console.log('in-flight session resumes on launch: OK');
+
+// 10. One that ran out while the app was gone is banked and the cadence moves
+//     on, instead of the lap disappearing.
+await page.evaluate(() => {
+  const d = JSON.parse(localStorage.getItem('tempo-data'));
+  Object.assign(d, { mode: 'focus', running: true, endAt: Date.now() - 60000, focusInCycle: 0, days: {} });
+  d.settings.autoStart = false;
+  localStorage.setItem('tempo-data', JSON.stringify(d));
+});
+await page.reload({ waitUntil: 'networkidle' });
+await page.waitForTimeout(1200);
+const bankedMode = await page.evaluate(() => document.documentElement.getAttribute('data-mode'));
+if (bankedMode !== 'short') throw new Error('elapsed session did not advance the cadence: ' + bankedMode);
+const bankedEngine = await page.textContent('.btn-engine-state');
+if (bankedEngine !== 'START') throw new Error('restore should not start running: ' + bankedEngine);
+await page.waitForTimeout(700); // persistence is debounced
+const banked = JSON.parse(await page.evaluate(() => localStorage.getItem('tempo-data')));
+const entry = Object.values(banked.days)[0];
+if (!entry || entry.s !== 1) throw new Error('lap not banked: ' + JSON.stringify(banked.days));
+console.log('session that elapsed while away is banked on launch: OK');
+
 if (errors.length) throw new Error('browser errors: ' + errors.join(' | '));
 console.log('ALL SMOKE TESTS PASSED');
 await browser.close();
