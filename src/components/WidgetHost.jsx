@@ -293,6 +293,7 @@ export default function WidgetHost({ tempo }) {
     weekFocusMin: stats.weekM || 0,
     canPin: pipSupported,
     onToggleRun: tempo.toggleRunFromWidget,
+    onSkip: tempo.skip,
     onTogglePin: tempo.toggleWidgetPin,
     onClose: tempo.closeWidget,
   };

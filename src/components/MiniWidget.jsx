@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import './MiniWidget.css';
+import { DIAL_ARC_PATH, DIAL_BOX, dialPoint, dialTicks } from './dial';
 
 const MODE_NAMES = { focus: 'FOCUS', short: 'SHORT BREAK', long: 'LONG BREAK' };
 
@@ -9,6 +11,28 @@ function formatFocus(min) {
   const h = Math.floor(m / 60);
   const r = m % 60;
   return r ? h + 'h ' + r + 'm' : h + 'h';
+}
+
+const pct = (v) => (v / DIAL_BOX) * 100 + '%';
+
+/* The tick ring, drawn once. Both densities are always in the markup and CSS
+   picks between them by size — see .mw-tick--minor. Marks are longer and sit
+   further out than the full dial's: at 1/4 the diameter its 13-and-7 units come
+   out as 2px stubs, and pushing the ring outward keeps the lengthened majors
+   clear of the sweep. */
+function buildTicks() {
+  return dialTicks({ tickR: 214, majorLen: 30, minorLen: 15 }).map((t) => (
+    <line
+      key={t.n}
+      className={
+        'mw-tick' + (t.major ? ' mw-tick--major' : ' mw-tick--minor') + (t.red ? ' mw-tick--red' : '')
+      }
+      x1={t.x1.toFixed(2)}
+      y1={t.y1.toFixed(2)}
+      x2={t.x2.toFixed(2)}
+      y2={t.y2.toFixed(2)}
+    />
+  ));
 }
 
 function PlayIcon() {
@@ -33,6 +57,10 @@ function PauseIcon() {
  * a Picture-in-Picture window and rendered into the in-app floating card, so
  * every size rule lives in CSS container queries off `.mw` rather than in
  * whichever host happens to be showing it.
+ *
+ * The ring is the main screen's speed dial at widget scale — same 440-unit
+ * geometry from ./dial, so the sweep, the tick ring and the riding dot line up
+ * with the big instrument instead of being a second, rounder idea.
  */
 export default function MiniWidget({
   variant = 'floating',
@@ -46,11 +74,14 @@ export default function MiniWidget({
   pinned,
   canPin,
   onToggleRun,
+  onSkip,
   onTogglePin,
   onClose,
   onDragPointerDown,
   onResizePointerDown,
 }) {
+  const ticks = useMemo(buildTicks, []);
+
   const p = Math.min(1, Math.max(0, 1 - remainingMs / totalMs));
   const totalSec = Math.ceil(remainingMs / 1000);
   const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
@@ -60,6 +91,9 @@ export default function MiniWidget({
   const label = mode === 'focus' && currentTask ? currentTask.text : MODE_NAMES[mode];
   const isTask = mode === 'focus' && Boolean(currentTask);
   const urgent = mode === 'focus' && running && remainingMs < 60000;
+
+  const needle = dialPoint(p);
+  const started = p > 0.0005;
 
   return (
     <div
@@ -101,21 +135,25 @@ export default function MiniWidget({
 
         <div className="mw-main">
           <div className="mw-ring">
-            <svg viewBox="0 0 100 100" aria-hidden="true" className="mw-ring-svg">
-              <circle cx="50" cy="50" r="44" pathLength="100" fill="none" stroke="var(--t-track)" strokeWidth="5" />
-              <circle
-                cx="50"
-                cy="50"
-                r="44"
+            <svg viewBox={'0 0 ' + DIAL_BOX + ' ' + DIAL_BOX} aria-hidden="true" className="mw-ring-svg">
+              <g>{ticks}</g>
+              <path className="mw-ring-track" d={DIAL_ARC_PATH} pathLength="100" fill="none" strokeLinecap="round" />
+              <path
+                className="mw-ring-arc"
+                d={DIAL_ARC_PATH}
                 pathLength="100"
                 fill="none"
-                stroke="var(--accent)"
-                strokeWidth="5"
                 strokeLinecap="round"
-                className="mw-ring-arc"
-                style={{ strokeDasharray: '100 100', strokeDashoffset: 100 - p * 100, opacity: p <= 0.0005 ? 0 : 1 }}
+                style={{ strokeDasharray: '100 100', strokeDashoffset: 100 - p * 100, opacity: started ? 1 : 0 }}
               />
             </svg>
+            {/* The dot rides the sweep. It is an element rather than an SVG
+                circle so its radius and halo stay in real pixels — scaled down
+                with the viewBox it would vanish at widget size. */}
+            <span
+              className="mw-ring-dot"
+              style={{ left: pct(needle.x), top: pct(needle.y), opacity: started ? 1 : 0 }}
+            ></span>
             <button
               type="button"
               className="mw-play"
@@ -126,6 +164,21 @@ export default function MiniWidget({
             >
               {running ? <PauseIcon /> : <PlayIcon />}
             </button>
+            {onSkip && (
+              <button
+                type="button"
+                className="mw-skip"
+                data-no-drag=""
+                onClick={onSkip}
+                aria-label="Skip to next session"
+                title={mode === 'focus' ? 'Skip to the break' : 'Skip to the next focus lap'}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                  <line x1="19" y1="5" x2="19" y2="19"></line>
+                </svg>
+              </button>
+            )}
           </div>
 
           <div className="mw-read">

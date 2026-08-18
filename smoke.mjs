@@ -140,8 +140,15 @@ const pipOpened = ctx.waitForEvent('page');
 await wPage.click('button[aria-label="Open mini widget"]');
 const pip = await pipOpened;
 await pip.waitForSelector('.mw--pip', { timeout: 5000 });
-if (!(await pip.$('.mw-ring-arc'))) throw new Error('no progress ring in the widget');
 if (!(await pip.$('.mw-play'))) throw new Error('no play/pause button in the ring');
+// The ring has to be the main screen's dial rather than a second idea about
+// circles: the same sweep path, a tick ring, and the dot that rides it.
+const dialPath = await wPage.getAttribute('.dial-arc', 'd');
+const ringPath = await pip.getAttribute('.mw-ring-arc', 'd');
+if (ringPath !== dialPath) throw new Error('widget ring is off the dial geometry: ' + ringPath + ' vs ' + dialPath);
+if ((await pip.$$('.mw-tick--major')).length !== 11) throw new Error('widget ring is missing the dial tick scale');
+if (!(await pip.$('.mw-tick--red'))) throw new Error('widget ring is missing the dial red zone');
+if (!(await pip.$('.mw-ring-dot'))) throw new Error('widget ring has no dot riding the sweep');
 const pipMetrics = await pip.textContent('.mw-metrics');
 if (!/TODAY/.test(pipMetrics) || !/WEEK/.test(pipMetrics)) throw new Error('metrics row missing: ' + pipMetrics);
 console.log('arrow opens the widget in a PiP window: OK');
@@ -164,7 +171,17 @@ if ((await pip.evaluate(() => document.documentElement.getAttribute('data-theme'
 await wPage.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 console.log('widget label + theme track the app: OK');
 
-// 14. Unpinning brings the widget back inside the app window as a floating
+// 14. The widget moves the session on by itself, without a trip back to the
+//     app: skip takes a focus lap to its break and the label follows.
+await pip.click('.mw-skip');
+await wPage.waitForTimeout(400);
+if ((await wPage.evaluate(() => document.documentElement.getAttribute('data-mode'))) !== 'short')
+  throw new Error('widget skip did not advance the session');
+if ((await pip.textContent('.mw-label')).trim() !== 'SHORT BREAK') throw new Error('widget label did not follow the skip');
+if ((await wPage.textContent('.btn-engine-state')) !== 'START') throw new Error('skip should leave the next session paused');
+console.log('widget skip advances to the next session: OK');
+
+// 15. Unpinning brings the widget back inside the app window as a floating
 //     card, and re-pinning sends it back out — the always-on-top switch.
 await pip.click('.mw-chrome-btn[aria-pressed="true"]');
 await wPage.waitForSelector('.widget-card .mw--floating', { timeout: 4000 });
@@ -176,13 +193,13 @@ await pip2.waitForSelector('.mw--pip', { timeout: 5000 });
 if (await wPage.$('.widget-card')) throw new Error('in-app card left behind after re-pinning');
 console.log('pin toggles between always-on-top and in-app: OK');
 
-// 15. Closing the floating window leaves widget mode entirely.
+// 16. Closing the floating window leaves widget mode entirely.
 await pip2.click('.mw-chrome-btn[aria-label="Close mini widget"]');
 await wPage.waitForTimeout(500);
 if (!(await wPage.$('button[aria-label="Open mini widget"]'))) throw new Error('app did not come back after closing the widget');
 console.log('closing the widget returns to the full app: OK');
 
-// 16. Without Document PiP (Firefox, Safari, the Android shell) the widget
+// 17. Without Document PiP (Firefox, Safari, the Android shell) the widget
 //     still floats — as a draggable, resizable card inside the app window.
 const fbPage = await ctx.newPage();
 fbPage.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
@@ -205,7 +222,7 @@ if (after.x < 0 || after.y < 0 || after.x + after.width > vp.width || after.y + 
   throw new Error('widget was thrown off screen: ' + JSON.stringify(after));
 console.log('in-app widget drags and stays on screen: OK');
 
-// 17. Resizing from the grip re-lays the widget out, and the clock stays
+// 18. Resizing from the grip re-lays the widget out, and the clock stays
 //     legible instead of being clipped or shrinking away.
 const grip = await fbPage.locator('.mw-resize').boundingBox();
 await fbPage.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);

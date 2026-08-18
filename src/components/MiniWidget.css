@@ -144,7 +144,13 @@
   cursor: default;
 }
 
-/* ---- Ring + centre transport ---- */
+/* ---- Ring + transport ----
+   The main screen's speed dial at widget scale. The geometry is identical (see
+   ./dial.js) but the *weights* are not, and cannot be: scaled down with the
+   viewBox, the dial's 6-unit arc and 1-unit ticks come out as invisible
+   hairlines. So every stroke here is non-scaling — set in real pixels, tracking
+   the ring rather than the 440-unit box, which keeps the instrument legible at
+   44px and stops it looking coarse at 160px. */
 
 .mw-main {
   display: flex;
@@ -164,31 +170,92 @@
 .mw-ring {
   position: relative;
   flex: none;
-  width: clamp(50px, 42cqmin, 152px);
+  width: clamp(56px, 46cqmin, 160px);
   aspect-ratio: 1;
 }
 .mw-ring-svg {
   width: 100%;
   height: 100%;
   display: block;
-  /* 0% starts at 12 o'clock rather than 3 */
-  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+/* Tick ring */
+/* Weights are set against the dial's own ratios: its 2-unit majors and 1-unit
+   minors are 0.45% and 0.23% of the dial's diameter. Held to that exactly they
+   would be sub-pixel here, so each is nudged up to the thinnest weight that
+   still renders, and no further — heavier and the scale reads as a bar chart. */
+.mw-tick {
+  vector-effect: non-scaling-stroke;
+  /* The dial's minors are 16% white, which at a quarter of its diameter falls
+     below the threshold of visibility — the same mark needs more contrast when
+     it is smaller. Lifted just to where the ring reads, with the hierarchy
+     against the majors still carried mostly by length. */
+  stroke: color-mix(in srgb, var(--t-tickmajor) 68%, transparent);
+  stroke-width: clamp(0.6px, 0.3cqmin, 1px);
+}
+.mw-tick--major {
+  stroke: var(--t-tickmajor);
+  stroke-width: clamp(0.8px, 0.42cqmin, 1.4px);
+}
+.mw-tick--red {
+  stroke: #ff2800;
+  opacity: 0.85;
+}
+/* The full 54-mark ring silts up into a grey band at widget size, so the
+   majors carry the scale on their own until there is room for the rest. */
+.mw-tick--minor {
+  display: none;
+}
+
+/* Progress sweep */
+/* The dial's sweep is 6 units on a 440 box — 1.4% of its diameter. Scaled
+   straight down that is under 2px here, so this tracks a little above it
+   (~2.1%) to stay visible without turning the sweep into a band. */
+.mw-ring-track,
+.mw-ring-arc {
+  vector-effect: non-scaling-stroke;
+  stroke-width: clamp(1.8px, 0.95cqmin, 3.4px);
+}
+.mw-ring-track {
+  stroke: var(--t-track);
 }
 .mw-ring-arc {
-  filter: drop-shadow(0 0 6px var(--glow));
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 7px var(--glow));
   transition:
     stroke-dashoffset 0.25s linear,
     opacity 0.4s ease,
     stroke 0.5s ease;
 }
 
+/* The dot riding the sweep, with the dial's soft halo around it. */
+.mw-ring-dot {
+  position: absolute;
+  width: clamp(3px, 1.5cqmin, 6px);
+  height: clamp(3px, 1.5cqmin, 6px);
+  margin: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow:
+    0 0 0 clamp(1.5px, 0.75cqmin, 3px) color-mix(in srgb, var(--accent) 16%, transparent),
+    0 0 6px var(--glow);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    background 0.5s ease;
+}
+
+/* Start / pause, in the centre of the ring — the widget's engine button. */
 .mw-play {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 58%;
-  height: 58%;
+  width: max(46%, 20px);
+  aspect-ratio: 1;
+  height: auto;
   border-radius: 50%;
   padding: 0;
   display: grid;
@@ -216,8 +283,46 @@
   transform: translate(-50%, -50%) scale(0.94);
 }
 .mw-play-icon {
-  width: 44%;
-  height: 44%;
+  width: 46%;
+  height: 46%;
+  display: block;
+}
+
+/* Skip to the next session, in the gap the sweep leaves open at the bottom —
+   the same place the full dial keeps its task banner, and the same secondary
+   treatment the main screen gives its round transport buttons. */
+.mw-skip {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  transform: translateX(-50%);
+  width: 24%;
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid var(--t-hair);
+  color: var(--t-muted);
+  cursor: pointer;
+  transition:
+    color 0.25s,
+    border-color 0.25s,
+    background 0.25s,
+    transform 0.12s ease;
+}
+.mw-skip:hover {
+  color: var(--t-text);
+  border-color: var(--t-hair2);
+  background: var(--t-btn);
+}
+.mw-skip:active {
+  transform: translateX(-50%) scale(0.92);
+}
+.mw-skip svg {
+  width: 52%;
+  height: 52%;
   display: block;
 }
 
@@ -381,7 +486,21 @@
   /* Height sets the ring in a landscape card, but a card that is short *and*
      narrow has to yield to width or the clock gets pushed off the edge. */
   .mw-ring {
-    width: clamp(44px, min(54cqh, 30cqw), 132px);
+    width: clamp(50px, min(60cqh, 32cqw), 148px);
+  }
+  .mw-ring-track,
+  .mw-ring-arc {
+    stroke-width: clamp(1.8px, min(1.26cqh, 0.67cqw), 3.4px);
+  }
+  .mw-tick {
+    stroke-width: clamp(0.6px, min(0.4cqh, 0.21cqw), 1px);
+  }
+  .mw-tick--major {
+    stroke-width: clamp(0.8px, min(0.55cqh, 0.29cqw), 1.4px);
+  }
+  .mw-ring-dot {
+    width: clamp(3px, min(2cqh, 1.05cqw), 6px);
+    height: clamp(3px, min(2cqh, 1.05cqw), 6px);
   }
   .mw-read {
     align-items: flex-start;
@@ -431,6 +550,21 @@
   }
 }
 
+/* Once the ring is round about 118px the minor ticks read as ticks again, so
+   the widget carries the dial's full scale. Both axes have to be big enough:
+   in a stacked card the ring follows the short side, in a landscape one the
+   height. */
+@container mw ((min-width: 256px) and (min-height: 256px)) {
+  .mw-tick--minor {
+    display: initial;
+  }
+}
+@container mw ((min-aspect-ratio: 1.15) and (min-height: 200px) and (min-width: 372px)) {
+  .mw-tick--minor {
+    display: initial;
+  }
+}
+
 /* Short: the state line goes first — the play/pause glyph already says
    whether the clock is moving. */
 @container mw (max-height: 170px) {
@@ -452,6 +586,21 @@
   }
   .mw-metrics {
     gap: clamp(7px, 3.5cqmin, 14px);
+  }
+}
+
+/* Skip needs about 18px to be a real target, which means a ring of ~75px —
+   and each layout reaches that at a different card size, since the stacked
+   ring follows the short side and the landscape one follows the height. Below
+   it the ring goes back to being just a sweep and a start button. */
+@container mw ((max-aspect-ratio: 1.15) and ((max-width: 162px) or (max-height: 162px))) {
+  .mw-skip {
+    display: none;
+  }
+}
+@container mw ((min-aspect-ratio: 1.15) and ((max-height: 124px) or (max-width: 233px))) {
+  .mw-skip {
+    display: none;
   }
 }
 
