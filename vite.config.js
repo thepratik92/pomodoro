@@ -4,6 +4,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    // The cockpit interface is a web-only beta. Folding the flag to false in
+    // the Android build lets the bundler drop the whole chunk from the APK.
+    __COCKPIT_BETA__: JSON.stringify(process.env.CAP_BUILD !== '1'),
+  },
   plugins: [
     react(),
     VitePWA({
@@ -30,6 +35,16 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         // Fonts load from Google's CDN; cache them so offline keeps the look.
         runtimeCaching: [
+          // The cockpit beta's typeface is self-hosted but not precached, so
+          // classic users never fetch it; once fetched it stays for offline.
+          {
+            urlPattern: /\.woff2?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'app-fonts',
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',

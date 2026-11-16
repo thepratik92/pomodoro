@@ -1,0 +1,1197 @@
+/* TEMPO — the cockpit interface (beta, web only)
+   ============================================================================
+   Two objects on a quiet ground: an instrument binnacle and a control panel.
+   Three materials do all the work — anodised aluminium, black glass, and one
+   signal colour — and the type is a single family throughout.
+
+   Everything is sized in --u, one design unit, which each layout below sets
+   from the viewport. The composition therefore scales as an object: nothing
+   reflows between a laptop and a large display, it is simply the same thing
+   nearer or further away. */
+
+/* ---- Tokens ------------------------------------------------------------- */
+
+html[data-ui='cockpit'] {
+  --ck-font: 'Barlow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* The signal. One colour per kind of session; orange is the last minute. */
+  --ck-giallo: #ffd200;
+  --ck-accent: var(--ck-giallo);
+  --ck-accent-ink: #171300;
+  --ck-reserve: #ff7a1a;
+
+  /* Glass is black whatever the theme — a display does not change colour
+     because the room did. */
+  --ck-glass: #050506;
+  --ck-tile: #121214;
+  --ck-ink: #f5f5f2;
+  --ck-ink-2: rgba(245, 245, 242, 0.62);
+  --ck-ink-3: rgba(245, 245, 242, 0.4);
+  --ck-line: rgba(255, 255, 255, 0.08);
+
+  /* The ground and the aluminium are what the theme changes. Dark: Nero. */
+  --ck-page: #0b0b0c;
+  --ck-page-light: rgba(255, 255, 255, 0.06);
+  --ck-page-ink: #ecece9;
+  --ck-page-ink-2: #8f8f8b;
+  --ck-alu-hi: #4b4c50;
+  --ck-alu: #2f3033;
+  --ck-alu-lo: #1d1e20;
+  --ck-alu-edge: rgba(255, 255, 255, 0.2);
+  --ck-alu-ink: #dededb;
+  --ck-alu-ink-2: #96968f;
+  --ck-cast: rgba(0, 0, 0, 0.7);
+  --ck-bz-1: #c9c9c6;
+  --ck-bz-2: #f4f4f2;
+  --ck-bz-3: #7f7f7c;
+}
+html[data-ui='cockpit'][data-theme='light'] {
+  --ck-page: #e4e4e1;
+  --ck-page-light: rgba(255, 255, 255, 0.85);
+  --ck-page-ink: #1c1c1d;
+  --ck-page-ink-2: #6b6b67;
+  --ck-alu-hi: #fcfcfb;
+  --ck-alu: #e6e6e3;
+  --ck-alu-lo: #c9c9c5;
+  --ck-alu-edge: rgba(255, 255, 255, 0.95);
+  --ck-alu-ink: #2a2a2b;
+  --ck-alu-ink-2: #77776f;
+  --ck-cast: rgba(40, 40, 36, 0.34);
+  --ck-bz-1: #dcdcd9;
+  --ck-bz-2: #ffffff;
+  --ck-bz-3: #979794;
+}
+/* Sepia becomes tan hide under warm-silver metal. */
+html[data-ui='cockpit'][data-theme='sepia'] {
+  --ck-page: #cdb596;
+  --ck-page-light: rgba(255, 244, 224, 0.55);
+  --ck-page-ink: #2b2118;
+  --ck-page-ink-2: #6f5d47;
+  --ck-alu-hi: #faf7f1;
+  --ck-alu: #e4dfd5;
+  --ck-alu-lo: #c5beb0;
+  --ck-alu-edge: rgba(255, 252, 245, 0.95);
+  --ck-alu-ink: #2e2a24;
+  --ck-alu-ink-2: #7b7366;
+  --ck-cast: rgba(70, 48, 22, 0.42);
+  --ck-bz-1: #dedbd4;
+  --ck-bz-2: #ffffff;
+  --ck-bz-3: #9a958b;
+}
+html[data-ui='cockpit'][data-mode='short'] {
+  --ck-accent: #7fe3bd;
+  --ck-accent-ink: #04170f;
+}
+html[data-ui='cockpit'][data-mode='long'] {
+  --ck-accent: #8cc0ff;
+  --ck-accent-ink: #04101f;
+}
+
+html[data-ui='cockpit'] body {
+  background: var(--ck-page);
+}
+
+/* ---- Shell -------------------------------------------------------------- */
+
+.cockpit {
+  --u: 1px;
+  /* Where the colour is. Idle, it sits on the key and the instruments are
+     white; running, the key goes dark and the colour is in the instruments. */
+  --ck-signal: var(--ck-ink);
+  --ck-lit: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+  font-family: var(--ck-font);
+  color: var(--ck-page-ink);
+  /* A single soft light from above, the way a product is photographed. */
+  background:
+    radial-gradient(130vmax 70vmax at 50% -10%, var(--ck-page-light), transparent 62%),
+    var(--ck-page);
+  transition: background-color 0.5s ease;
+}
+.cockpit[data-running='true'] {
+  --ck-signal: var(--ck-accent);
+  --ck-lit: 1;
+}
+.cockpit[data-final='true'] {
+  --ck-accent: var(--ck-reserve);
+}
+
+.ck-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: calc(18px + var(--safe-top)) clamp(16px, 3vw, 32px) 0;
+}
+.ck-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ck-wordmark {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.42em;
+}
+.ck-beta {
+  padding: 3px 8px 3px 9px;
+  border-radius: 999px;
+  background: var(--ck-giallo);
+  color: #171300;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+.ck-exit {
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--ck-page-ink) 22%, transparent);
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: var(--ck-page-ink-2);
+  font: 600 10.5px var(--ck-font);
+  letter-spacing: 0.16em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+@media (hover: hover) {
+  .ck-exit:hover {
+    color: var(--ck-page-ink);
+    border-color: color-mix(in srgb, var(--ck-page-ink) 45%, transparent);
+  }
+}
+.ck-exit:active {
+  transform: scale(0.96);
+}
+
+.ck-foot {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  padding: 0 20px 18px;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ck-page-ink-2);
+}
+.ck-foot kbd {
+  margin-right: 0.7em;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ck-page-ink);
+}
+
+.ck-dash {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 34);
+  padding: calc(var(--u) * 26) 0 calc(var(--u) * 34);
+}
+
+/* ---- Materials ---------------------------------------------------------- */
+
+/* Anodised aluminium: a broad top-lit gradient, a bright edge where the
+   chamfer catches the light, and a grain fine enough to be felt rather than
+   seen. The cast shadow is long and soft — one light, some distance away. */
+.ck-binnacle,
+.ck-cpanel {
+  position: relative;
+  flex: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--ck-alu-hi) 0%, var(--ck-alu) 34%, var(--ck-alu-lo) 100%);
+  box-shadow:
+    inset 0 1px 0 var(--ck-alu-edge),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 calc(var(--u) * 34) calc(var(--u) * 64) calc(var(--u) * -22) var(--ck-cast);
+}
+
+/* Black glass set into the metal: a dark line where the two meet, and the
+   faintest sheen across the top so it reads as a surface, not a hole. */
+.ck-glass,
+.ck-screen {
+  position: relative;
+  background:
+    linear-gradient(168deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0) 26%),
+    var(--ck-glass);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.75),
+    0 1px 0 1px var(--ck-alu-edge),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045);
+  color: var(--ck-ink);
+}
+
+/* ---- Binnacle ----------------------------------------------------------- */
+
+.ck-binnacle {
+  width: calc(var(--u) * 800);
+  height: calc(var(--u) * 372);
+  padding: calc(var(--u) * 14);
+  border-radius: calc(var(--u) * 100);
+}
+.ck-glass {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--u) * 86);
+  display: grid;
+  grid-template-columns: calc(var(--u) * 200) calc(var(--u) * 304) calc(var(--u) * 200);
+  column-gap: calc(var(--u) * 12);
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Instruments -------------------------------------------------------- */
+
+.ck-well {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 3.3%;
+  border: 0;
+  border-radius: 50%;
+  container-type: inline-size;
+  font: inherit;
+  color: inherit;
+  /* A turned bezel: the reflections fall in sectors, not as a smooth fade. */
+  background: conic-gradient(
+    from 128deg,
+    var(--ck-bz-1),
+    var(--ck-bz-2) 8%,
+    var(--ck-bz-1) 19%,
+    var(--ck-bz-3) 33%,
+    var(--ck-bz-1) 47%,
+    var(--ck-bz-2) 58%,
+    var(--ck-bz-1) 70%,
+    var(--ck-bz-3) 86%,
+    var(--ck-bz-1)
+  );
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    0 calc(var(--u) * 3) calc(var(--u) * 7) rgba(0, 0, 0, 0.75);
+}
+button.ck-well {
+  cursor: pointer;
+}
+button.ck-well:active .ck-face {
+  transform: scale(0.992);
+}
+.ck-face {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 32%, #111113 0%, #070708 52%, #020202 100%);
+  box-shadow: 0 0 0 1px #000;
+  transition: transform 0.12s ease-out;
+}
+/* The lens: the bezel's shadow falling onto the face, and a pale reflection
+   across the top of the glass. It sits above the needle, as glass would. */
+.ck-lens {
+  position: absolute;
+  inset: 3.3%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(118% 76% at 50% -22%, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0) 62%),
+    radial-gradient(circle at 50% 54%, rgba(0, 0, 0, 0) 78%, rgba(0, 0, 0, 0.62) 100%);
+}
+.ck-scale,
+.ck-needle,
+.ck-rotor,
+.ck-rotor svg,
+.ck-hub {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ck-needle {
+  pointer-events: none;
+  filter: drop-shadow(0 1.1cqw 1.1cqw rgba(0, 0, 0, 0.75));
+}
+.ck-rotor {
+  will-change: transform;
+}
+
+.ck-tick {
+  stroke: rgba(245, 245, 242, 0.46);
+  stroke-width: 2;
+}
+.ck-tick--major {
+  stroke: var(--ck-ink);
+  stroke-width: 3.4;
+}
+.ck-tick--reserve {
+  stroke: var(--ck-reserve);
+}
+.ck-side .ck-tick {
+  stroke-width: 3;
+}
+.ck-side .ck-tick--major {
+  stroke-width: 5.5;
+}
+.ck-multigraph .ck-tick {
+  stroke-width: 3;
+}
+.ck-multigraph .ck-tick--major {
+  stroke-width: 6;
+}
+.ck-num {
+  fill: var(--ck-ink);
+  font: 500 27px var(--ck-font);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.ck-num--side {
+  font-size: 35px;
+}
+.ck-num--graph {
+  font-size: 46px;
+}
+.ck-num--dim {
+  fill: var(--ck-ink-3);
+}
+.ck-unit {
+  fill: var(--ck-ink-3);
+  font: 600 15px var(--ck-font);
+  letter-spacing: 0.24em;
+  text-anchor: middle;
+}
+.ck-unit--side {
+  font-size: 22px;
+}
+.ck-rim {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 2;
+}
+.ck-band-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.09);
+  stroke-width: 5;
+}
+.ck-band {
+  fill: none;
+  stroke: var(--ck-signal);
+  stroke-width: 5;
+  opacity: calc(0.5 + var(--ck-lit) * 0.5);
+  transition:
+    stroke-dasharray 0.25s linear,
+    stroke 0.7s ease,
+    opacity 0.7s ease;
+}
+.ck-seg {
+  fill: none;
+  stroke-width: 17;
+  stroke: rgba(255, 255, 255, 0.13);
+  transition: stroke 0.6s ease;
+}
+.ck-seg--done {
+  stroke: var(--ck-ink);
+}
+.ck-seg--current {
+  stroke: var(--ck-accent);
+}
+.ck-readout {
+  fill: var(--ck-ink);
+  font: 300 64px var(--ck-font);
+  text-anchor: middle;
+}
+.ck-readout--text {
+  font-size: 44px;
+  font-weight: 400;
+}
+.ck-readout-sub {
+  font-size: 34px;
+  font-weight: 400;
+  fill: var(--ck-ink-2);
+}
+.ck-caption {
+  fill: var(--ck-ink-2);
+  font: 600 22px var(--ck-font);
+  letter-spacing: 0.2em;
+  text-anchor: middle;
+}
+.ck-pip {
+  fill: rgba(255, 255, 255, 0.22);
+  transition: fill 0.3s;
+}
+.ck-pip--on {
+  fill: var(--ck-ink);
+}
+/* Needles are always in the session's colour — they have to be found at a
+   glance against white numerals, running or not. */
+.ck-needle-blade,
+.ck-needle-tail {
+  fill: var(--ck-accent);
+  transition: fill 0.7s ease;
+}
+.ck-hub-cap {
+  fill: #d2d2cf;
+  stroke: #84847f;
+  stroke-width: 1.5;
+}
+.ck-hub-pin {
+  fill: #19191a;
+}
+.ck-hand {
+  fill: var(--ck-ink);
+}
+.ck-hand--sec,
+.ck-eta {
+  fill: var(--ck-signal);
+  transition: fill 0.7s ease;
+}
+
+/* The glass over the stint dial's hub. It floats above the needle and throws
+   its shadow down onto the scale — the second layer of the instrument. */
+.ck-puck {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 54%;
+  height: 54%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5cqw;
+  background: radial-gradient(circle at 50% 24%, #1b1b1d 0%, #0b0b0c 58%, #050505 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 2.6cqw 5.5cqw rgba(0, 0, 0, 0.9),
+    0 0.7cqw 1.4cqw rgba(0, 0, 0, 0.7);
+}
+.ck-puck-label,
+.ck-puck-state {
+  font-weight: 600;
+  font-size: 3.5cqw;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.ck-puck-label {
+  color: var(--ck-ink-2);
+}
+.ck-puck-state {
+  color: var(--ck-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.ck-puck-state--paused {
+  color: var(--ck-accent);
+}
+.ck-digits {
+  display: flex;
+  align-items: baseline;
+  font-weight: 300;
+  font-size: 17.5cqw;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ck-ink);
+}
+.ck-colon {
+  width: 0.28em;
+  text-align: center;
+  transform: translateY(-0.07em);
+}
+
+/* Tell-tales: small lamps that are simply off when there is nothing to say. */
+.ck-telltales {
+  position: absolute;
+  bottom: calc(var(--u) * 24);
+  width: calc(var(--u) * 200);
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--u) * 16);
+  font-weight: 600;
+  font-size: max(calc(var(--u) * 10.5), 9px);
+  letter-spacing: 0.16em;
+  color: rgba(245, 245, 242, 0.2);
+}
+.ck-telltales--left {
+  left: calc(var(--u) * 22);
+}
+.ck-telltales--right {
+  right: calc(var(--u) * 22);
+}
+.ck-telltales span {
+  transition: color 0.4s;
+}
+.ck-telltales span[data-on='true'] {
+  color: var(--ck-ink-2);
+}
+
+/* ---- Control panel ------------------------------------------------------ */
+
+.ck-cpanel {
+  width: calc(var(--u) * 516);
+  padding: calc(var(--u) * 12) calc(var(--u) * 12) calc(var(--u) * 32);
+  border-radius: calc(var(--u) * 58);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 14);
+}
+.ck-screen {
+  border-radius: calc(var(--u) * 46);
+  padding: calc(var(--u) * 14);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 12);
+}
+.ck-screen-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) calc(var(--u) * 152);
+  gap: calc(var(--u) * 12);
+}
+.ck-screen-mid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) calc(var(--u) * 152);
+  gap: calc(var(--u) * 12);
+  height: calc(var(--u) * 98);
+}
+
+/* Tiles share the screen's corner: the radius is the screen's, less the
+   padding between them, so every curve on the panel is concentric. */
+.ck-tile {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  padding: calc(var(--u) * 15) calc(var(--u) * 18) calc(var(--u) * 14);
+  border: 1px solid var(--ck-line);
+  border-radius: calc(var(--u) * 32);
+  background: var(--ck-tile);
+  color: var(--ck-ink);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    transform 0.12s ease-out;
+}
+@media (hover: hover) {
+  .ck-tile:hover,
+  .ck-dock-btn:hover {
+    background: #19191c;
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .ck-dock-btn:hover {
+    color: var(--ck-ink);
+  }
+}
+.ck-tile:active,
+.ck-dock-btn:active {
+  transform: scale(0.975);
+}
+.ck-tile-label {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+  font-weight: 600;
+  font-size: max(calc(var(--u) * 10.5), 9.5px);
+  letter-spacing: 0.17em;
+  color: var(--ck-ink-2);
+  white-space: nowrap;
+}
+.ck-lamp {
+  flex: none;
+  width: calc(var(--u) * 7);
+  height: calc(var(--u) * 7);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.24);
+  transition:
+    background 0.6s,
+    box-shadow 0.6s;
+}
+.ck-lamp[data-on='true'] {
+  background: var(--ck-accent);
+  box-shadow: 0 0 calc(var(--u) * 8) color-mix(in srgb, var(--ck-accent) 70%, transparent);
+}
+.ck-now-text {
+  flex: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  margin-top: calc(var(--u) * 10);
+  font-weight: 500;
+  font-size: calc(var(--u) * 21);
+  line-height: 1.22;
+  letter-spacing: -0.005em;
+  overflow-wrap: anywhere;
+}
+.ck-now--empty .ck-now-text {
+  color: var(--ck-ink-3);
+}
+.ck-now-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 8);
+  font-weight: 500;
+  font-size: max(calc(var(--u) * 10.5), 9.5px);
+  letter-spacing: 0.14em;
+  color: var(--ck-ink-3);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ck-now-foot > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ck-now-foot svg {
+  flex: none;
+  width: calc(var(--u) * 14);
+  height: calc(var(--u) * 14);
+}
+.ck-multigraph {
+  align-self: center;
+}
+
+.ck-count {
+  padding: 0 calc(var(--u) * 7);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ck-ink);
+  font-size: max(calc(var(--u) * 10.5), 9.5px);
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+.ck-board-list,
+.ck-board-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--u) * 3);
+  min-width: 0;
+  margin-top: calc(var(--u) * 4);
+}
+.ck-board-item,
+.ck-board-empty {
+  font-size: calc(var(--u) * 14.5);
+  line-height: 1.3;
+}
+.ck-board-item {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ck-board-item + .ck-board-item,
+.ck-board-empty {
+  color: var(--ck-ink-3);
+}
+.ck-today-value {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 6);
+  margin-top: calc(var(--u) * 2);
+  font-weight: 300;
+  font-size: calc(var(--u) * 38);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.ck-today-unit {
+  font-weight: 600;
+  font-size: max(calc(var(--u) * 10.5), 9.5px);
+  letter-spacing: 0.17em;
+  color: var(--ck-ink-2);
+}
+.ck-today-sub {
+  font-size: calc(var(--u) * 12.5);
+  color: var(--ck-ink-3);
+  white-space: nowrap;
+}
+
+/* Glass buttons along the bottom of the screen. */
+.ck-dock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(var(--u) * 8);
+}
+.ck-dock-btn {
+  height: calc(var(--u) * 48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 7);
+  padding: 0 calc(var(--u) * 4);
+  border: 1px solid var(--ck-line);
+  border-radius: calc(var(--u) * 20);
+  background: linear-gradient(180deg, #19191b, #0d0d0e);
+  color: var(--ck-ink-2);
+  font: 600 max(calc(var(--u) * 10), 9px) var(--ck-font);
+  letter-spacing: 0.13em;
+  cursor: pointer;
+  transition:
+    color 0.25s,
+    background 0.25s,
+    border-color 0.25s,
+    transform 0.12s ease-out;
+}
+.ck-dock-btn svg {
+  flex: none;
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
+}
+.ck-dock-btn[data-lit='true'] {
+  color: var(--ck-ink);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ---- The shelf: what stays physical ------------------------------------- */
+
+.ck-shelf {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(var(--u) * 14);
+  padding: calc(var(--u) * 2) calc(var(--u) * 14) 0;
+}
+.ck-shelf-drive {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--u) * 14);
+}
+.ck-engraved {
+  display: block;
+  margin-top: calc(var(--u) * 7);
+  text-align: center;
+  font-weight: 600;
+  font-size: max(calc(var(--u) * 9.5), 9px);
+  letter-spacing: 0.16em;
+  line-height: 1;
+  color: var(--ck-alu-ink-2);
+  white-space: nowrap;
+}
+
+/* A slot milled into the metal: dark, lit from below along its lower lip. */
+.ck-mode-track,
+.ck-key-dock {
+  background: linear-gradient(180deg, #060607, #1a1a1c);
+  box-shadow:
+    inset 0 calc(var(--u) * 2) calc(var(--u) * 5) rgba(0, 0, 0, 0.9),
+    0 1px 0 var(--ck-alu-edge);
+}
+
+.ck-mode {
+  flex: 1;
+  min-width: 0;
+  max-width: calc(var(--u) * 208);
+  padding-top: calc(var(--u) * 16);
+}
+.ck-mode-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  height: calc(var(--u) * 40);
+  padding: calc(var(--u) * 4);
+  border-radius: calc(var(--u) * 20);
+}
+.ck-mode-thumb {
+  position: absolute;
+  top: calc(var(--u) * 4);
+  bottom: calc(var(--u) * 4);
+  left: calc(var(--u) * 4);
+  width: calc((100% - calc(var(--u) * 8)) / 3);
+  border-radius: calc(var(--u) * 16);
+  transform: translateX(calc(var(--i) * 100%));
+  /* A detent: it runs slightly past and seats back. */
+  transition: transform 0.46s cubic-bezier(0.3, 1.36, 0.5, 1);
+  /* Knurled, so it can be found by touch. */
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 1px, rgba(255, 255, 255, 0.3) 1px 2px, rgba(0, 0, 0, 0) 2px 4px),
+    linear-gradient(180deg, #f6f6f4, #b9b9b5);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 calc(var(--u) * 2) calc(var(--u) * 4) rgba(0, 0, 0, 0.6);
+}
+.ck-mode-stop {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--u) * 16);
+  background: none;
+  cursor: pointer;
+}
+.ck-mode-detent {
+  width: calc(var(--u) * 5);
+  height: calc(var(--u) * 5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: opacity 0.2s;
+}
+.ck-mode-stop[aria-checked='true'] .ck-mode-detent {
+  opacity: 0;
+}
+.ck-mode-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: calc(var(--u) * 12);
+  text-align: center;
+  font-weight: 600;
+  font-size: max(calc(var(--u) * 9.5), 9px);
+  letter-spacing: 0.16em;
+  line-height: 1;
+  color: var(--ck-alu-ink-2);
+}
+.ck-mode-legend span {
+  transition: color 0.3s;
+}
+.ck-mode-legend span[data-on='true'] {
+  color: var(--ck-alu-ink);
+}
+
+/* The key. Its face carries the session's colour until it is pressed home;
+   then a dark layer fades up over it and the colour belongs to the dials. */
+.ck-key-dock {
+  padding: calc(var(--u) * 5);
+  border-radius: calc(var(--u) * 27);
+}
+.ck-key {
+  position: relative;
+  width: calc(var(--u) * 136);
+  height: calc(var(--u) * 62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 9);
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--u) * 22);
+  overflow: hidden;
+  background: var(--ck-accent);
+  color: var(--ck-accent-ink);
+  font: 600 calc(var(--u) * 15) var(--ck-font);
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 calc(var(--u) * -3) calc(var(--u) * 4) rgba(0, 0, 0, 0.16),
+    0 calc(var(--u) * 3) calc(var(--u) * 6) rgba(0, 0, 0, 0.7);
+  transition:
+    background-color 0.7s ease,
+    color 0.5s ease,
+    box-shadow 0.4s ease,
+    transform 0.16s ease-out;
+}
+.ck-key::before {
+  content: '';
+  position: absolute;
+  /* Short of the edge, so a hairline of the colour stays lit around the key. */
+  inset: calc(var(--u) * 1.5);
+  border-radius: inherit;
+  background: linear-gradient(180deg, #1c1c1e, #09090a);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.ck-key > * {
+  position: relative;
+}
+.ck-key[data-docked='true'] {
+  color: var(--ck-ink);
+  transform: translateY(calc(var(--u) * 1.5));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0),
+    inset 0 0 0 rgba(0, 0, 0, 0),
+    0 calc(var(--u) * 1) calc(var(--u) * 2) rgba(0, 0, 0, 0.7);
+}
+.ck-key[data-docked='true']::before {
+  opacity: 1;
+}
+.ck-key:active {
+  transform: translateY(calc(var(--u) * 2.5)) scale(0.985);
+}
+.ck-key-lamp {
+  width: calc(var(--u) * 7);
+  height: calc(var(--u) * 7);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ck-accent-ink) 30%, transparent);
+  transition:
+    background 0.6s,
+    box-shadow 0.6s;
+}
+.ck-key[data-docked='true'] .ck-key-lamp {
+  background: var(--ck-accent);
+  box-shadow: 0 0 calc(var(--u) * 8) color-mix(in srgb, var(--ck-accent) 75%, transparent);
+}
+.ck-key-state {
+  text-indent: 0.18em;
+}
+
+.ck-round {
+  padding-top: calc(var(--u) * 11);
+}
+.ck-round-btn {
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 50);
+  height: calc(var(--u) * 50);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #262627;
+  cursor: pointer;
+  background: conic-gradient(from 128deg, #f6f6f4, #b3b3af 12%, #eeeeeb 25%, #a3a39f 40%, #f2f2f0 55%, #aeaeaa 70%, #e8e8e5 85%, #f6f6f4);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 calc(var(--u) * 3) calc(var(--u) * 6) rgba(0, 0, 0, 0.4);
+  transition:
+    transform 0.14s ease-out,
+    box-shadow 0.14s ease-out;
+}
+.ck-round-btn svg {
+  width: calc(var(--u) * 17);
+  height: calc(var(--u) * 17);
+}
+.ck-round-btn:active {
+  transform: translateY(calc(var(--u) * 1.5)) scale(0.97);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 calc(var(--u) * 1) calc(var(--u) * 2) rgba(0, 0, 0, 0.4);
+}
+
+/* The grip the panel is turned by. */
+.ck-grip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * 12);
+  width: calc(var(--u) * 92);
+  height: calc(var(--u) * 5);
+  border-radius: calc(var(--u) * 3);
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.5),
+    0 1px 0 var(--ck-alu-edge);
+}
+
+.ck-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(8, 8, 9, 0.5);
+}
+
+/* ---- Focus -------------------------------------------------------------- */
+
+/* Text fields show focus on their own underline, as in the classic sheets. */
+.cockpit :focus-visible:not(input) {
+  outline: 2px solid var(--ck-accent);
+  outline-offset: 3px;
+}
+.cockpit input:focus-visible {
+  outline: none;
+}
+.ck-binnacle :focus-visible,
+.ck-screen :focus-visible {
+  outline-offset: 2px;
+}
+
+/* ---- Waking ------------------------------------------------------------- */
+
+/* The displays come up a beat after the metal is already there; the needles
+   (Needle.jsx) sweep up from their stops at the same moment. */
+@keyframes ck-wake {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.ck-scale,
+.ck-puck > *,
+.ck-telltales,
+.ck-screen > * {
+  animation: ck-wake 0.9s ease-out both;
+}
+.ck-screen > :nth-child(2) {
+  animation-delay: 0.08s;
+}
+.ck-screen > :nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ck-scale,
+  .ck-puck > *,
+  .ck-telltales,
+  .ck-screen > * {
+    animation: none;
+  }
+  .ck-mode-thumb {
+    transition-duration: 0.01s;
+  }
+}
+
+/* ---- Layouts ------------------------------------------------------------ */
+
+/* Stacked (the default above): binnacle over panel, for a tall or narrow
+   window. The unit comes from the width alone and the page scrolls if it
+   must. */
+.cockpit {
+  --u0: min(calc((100vw - 48px) / 800), 1.1px);
+  --u: var(--u0);
+}
+/* Stacked, the panel is drawn a size up so it holds its own under the
+   cluster instead of looking like an accessory to it. */
+.ck-cpanel {
+  --u: calc(var(--u0) * 1.3);
+}
+
+/* Side by side, as in the car: cluster ahead of you, panel to its right. The
+   unit is whichever of width and height runs out first. */
+@media (min-width: 1100px) and (min-aspect-ratio: 5/4) {
+  .cockpit {
+    --u0: min(calc((100vw - 72px) / 1364), calc((100dvh - 150px) / 520), 1.25px);
+  }
+  .ck-cpanel {
+    --u: var(--u0);
+  }
+  .ck-dash {
+    flex-direction: row;
+    gap: calc(var(--u) * 48);
+  }
+}
+
+/* A phone-width browser: the cluster stands its dials up — stint on top, the
+   two side dials beneath — and the shelf comes before the screen, so the key
+   is never below the fold. */
+@media (max-width: 699px) {
+  .cockpit {
+    --u0: min(calc((100vw - 24px) / 400), 1.3px);
+  }
+  .ck-cpanel {
+    --u: var(--u0);
+  }
+  .ck-top {
+    padding-top: calc(12px + var(--safe-top));
+  }
+  .ck-foot {
+    display: none;
+  }
+  .ck-wordmark {
+    font-size: 13px;
+    letter-spacing: 0.34em;
+  }
+  .ck-dash {
+    gap: calc(var(--u) * 16);
+    padding: calc(var(--u) * 16) 0 calc(var(--u) * 24);
+  }
+  .ck-binnacle {
+    width: calc(var(--u) * 400);
+    height: auto;
+    padding: calc(var(--u) * 10);
+    border-radius: calc(var(--u) * 64);
+  }
+  .ck-glass {
+    border-radius: calc(var(--u) * 54);
+    padding: calc(var(--u) * 18) calc(var(--u) * 18) calc(var(--u) * 14);
+    grid-template-columns: calc(var(--u) * 168) calc(var(--u) * 168);
+    grid-template-areas:
+      'stint stint'
+      'laps trend'
+      'tl tr';
+    column-gap: calc(var(--u) * 16);
+    row-gap: calc(var(--u) * 12);
+  }
+  .ck-stint {
+    grid-area: stint;
+    width: calc(var(--u) * 340);
+    justify-self: center;
+  }
+  .ck-laps {
+    grid-area: laps;
+  }
+  .ck-trend {
+    grid-area: trend;
+  }
+  .ck-telltales {
+    position: static;
+    width: auto;
+  }
+  .ck-telltales--left {
+    grid-area: tl;
+  }
+  .ck-telltales--right {
+    grid-area: tr;
+  }
+  .ck-cpanel {
+    width: calc(var(--u) * 400);
+    flex-direction: column-reverse;
+    padding: calc(var(--u) * 16) calc(var(--u) * 10) calc(var(--u) * 30);
+    border-radius: calc(var(--u) * 54);
+  }
+  .ck-screen {
+    border-radius: calc(var(--u) * 44);
+    padding: calc(var(--u) * 12);
+    gap: calc(var(--u) * 10);
+  }
+  .ck-screen-top {
+    grid-template-columns: minmax(0, 1fr) calc(var(--u) * 132);
+    gap: calc(var(--u) * 10);
+  }
+  .ck-screen-mid {
+    grid-template-columns: minmax(0, 1fr) calc(var(--u) * 132);
+    gap: calc(var(--u) * 10);
+  }
+  .ck-dock-btn {
+    flex-direction: column;
+    height: calc(var(--u) * 54);
+    gap: calc(var(--u) * 4);
+    font-size: max(calc(var(--u) * 8.5), 8px);
+    letter-spacing: 0.1em;
+  }
+  .ck-shelf {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: calc(var(--u) * 4);
+    padding: 0 calc(var(--u) * 8) calc(var(--u) * 4);
+  }
+  .ck-shelf-drive {
+    justify-content: space-between;
+  }
+  .ck-key {
+    width: calc(var(--u) * 190);
+  }
+  .ck-mode {
+    max-width: none;
+    padding-top: calc(var(--u) * 10);
+  }
+}

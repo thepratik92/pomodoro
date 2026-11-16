@@ -23,3 +23,28 @@ The design medium is **HTML/CSS/JS** — these are prototypes, not production co
 - `README.md` — this file
 - `chats/` — conversation transcripts (read these!)
 - `project/` — the `Pomodoro timer design` project files (HTML prototypes, assets, components)
+
+## Cockpit interface (beta, web only)
+
+A second interface lives alongside the original one. The classic interface is
+still the default and is untouched; the cockpit is opt-in, and is not part of
+the Android build.
+
+- **Turn it on:** Set-up → Interface → Cockpit, or open the app with
+  `?ui=cockpit`. **Turn it off:** the "Classic view" button, the same Set-up
+  row, or `?ui=classic`. The choice is stored per browser (`tempo-ui`), not in
+  the synced settings.
+- **What it is:** an instrument binnacle (laps, the stint clock, and a
+  selectable today / week / streak dial, all with sprung needles) beside a
+  control panel (current task, up-next, a clock/chronograph multigraph, and a
+  shelf of physical-style controls).
+- **Where it lives:** `src/cockpit/`. `src/App.jsx` picks the shell;
+  `src/ClassicApp.jsx` is the original. Both run on the same `useTempo` state,
+  so switching mid-session keeps the clock. The task picker, pit board,
+  telemetry and set-up sheets are the classic components, re-dressed by
+  `src/cockpit/skin.css`.
+- **Web only:** `__COCKPIT_BETA__` (see `vite.config.js`) is false when
+  `CAP_BUILD=1`, so the chunk is dropped from the APK.
+- **No extra dependencies:** the typeface (Barlow, OFL) is checked in under
+  `src/cockpit/fonts/`.
+- **Check it:** `npm run build && npm run preview`, then `node smoke-cockpit.mjs`.

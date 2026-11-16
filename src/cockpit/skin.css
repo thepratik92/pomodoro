@@ -1,0 +1,144 @@
+/* The classic sheets, re-dressed for the cockpit
+   ============================================================================
+   The pit board, telemetry, set-up and the task picker are the classic
+   components, unchanged. This file gives them the cockpit's materials by
+   re-pointing the tokens they already read, on those elements only — so the
+   mini widget, which is its own instrument and shared with the classic
+   interface, keeps its own look.
+
+   They become what a screen is here: black glass, whatever the page theme. */
+
+html[data-ui='cockpit'] :is(.panel, .picker-layer) {
+  --font-display: 'Barlow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-ui: 'Barlow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-ui);
+
+  --accent: var(--ck-accent);
+  --accent-ink: var(--ck-accent);
+  --glow: color-mix(in srgb, var(--ck-accent) 22%, transparent);
+  --ambient: transparent;
+  --done: var(--ck-accent);
+  --done-glow: transparent;
+  --chart: var(--ck-accent);
+  --chart-glow: transparent;
+
+  --t-bg: #050506;
+  --t-panel: #0c0c0d;
+  --t-text: #f5f5f2;
+  --t-muted: #a9a9a5;
+  --t-faint: #83837f;
+  --t-hair: rgba(255, 255, 255, 0.09);
+  --t-hair2: rgba(255, 255, 255, 0.18);
+  --t-track: rgba(255, 255, 255, 0.06);
+  --t-switch: rgba(255, 255, 255, 0.1);
+  --t-knob: #a3a39f;
+  --t-btn: rgba(255, 255, 255, 0.05);
+}
+
+/* Sheets float inside the window on a corner that matches the hardware,
+   rather than running edge to edge. */
+html[data-ui='cockpit'] .panel {
+  top: calc(12px + var(--safe-top));
+  bottom: calc(12px + var(--safe-bottom));
+  width: min(calc(100vw - 24px), 360px);
+  padding: 26px 26px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 34px;
+  background: color-mix(in srgb, var(--t-panel) 88%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 30px 70px -20px rgba(0, 0, 0, 0.6);
+  color: var(--t-text);
+  transition: box-shadow 0.3s ease;
+}
+/* A closed sheet rests just outside the window; its shadow must not reach
+   back in. */
+html[data-ui='cockpit'] .panel[data-open='false'] {
+  box-shadow: none;
+}
+html[data-ui='cockpit'] .panel--left {
+  left: calc(12px + var(--safe-left));
+}
+html[data-ui='cockpit'] .panel--right {
+  right: calc(12px + var(--safe-right));
+}
+html[data-ui='cockpit'] .picker-card {
+  border-radius: 34px;
+  padding: 26px;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--t-panel) 90%, transparent);
+  color: var(--t-text);
+}
+html[data-ui='cockpit'] .picker-scrim {
+  background: rgba(8, 8, 9, 0.5);
+}
+
+/* Michroma is set tiny and very wide; Barlow wants the opposite. One family,
+   three roles: titles, small tracked labels, and running text. */
+html[data-ui='cockpit'] :is(.panel-title, .picker-title) {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.26em;
+}
+html[data-ui='cockpit']
+  :is(
+    .setup-label,
+    .stat-label,
+    .todo-section-label,
+    .picker-section-label,
+    .chart-title,
+    .sync-row,
+    .clear-done-btn,
+    .picker-skip,
+    .theme-btn,
+    .bucket-chip,
+    .sync-btn,
+    .sync-badge,
+    .picker-item-hint,
+    .setup-unit
+  ) {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-indent: 0;
+}
+html[data-ui='cockpit'] :is(.setup-unit, .sync-badge, .picker-item-hint) {
+  font-size: 9.5px;
+}
+html[data-ui='cockpit'] :is(.theme-btn, .bucket-chip) {
+  padding: 7px 12px;
+  border-radius: 999px;
+}
+html[data-ui='cockpit'] .sync-btn {
+  border-radius: 999px;
+  padding: 9px 14px;
+}
+html[data-ui='cockpit'] .sync-badge {
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+html[data-ui='cockpit'] .picker-item {
+  border-radius: 16px;
+  padding: 12px 12px;
+}
+html[data-ui='cockpit'] :is(.todo-text, .todo-input, .picker-item-text) {
+  font-size: 16px;
+}
+html[data-ui='cockpit'] :is(.stat-value, .stepper-val) {
+  font-weight: 400;
+}
+html[data-ui='cockpit'] .setup-note {
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+/* The check on a finished task sits on the signal colour, which is light. */
+html[data-ui='cockpit'] .todo-check svg {
+  stroke: var(--ck-accent-ink);
+}
+/* "On" is the signal colour with dark ink on it, as on the key. */
+html[data-ui='cockpit'] .switch[aria-checked='true'] .switch-knob {
+  background: var(--ck-accent-ink) !important;
+}
+html[data-ui='cockpit'] .switch {
+  box-shadow: none !important;
+}

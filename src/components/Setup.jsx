@@ -16,6 +16,12 @@ const SWITCHES = [
 
 const THEMES = ['dark', 'light', 'sepia'];
 
+// Which shell draws the app. Only offered where the beta exists (web builds).
+const INTERFACES = [
+  { key: 'classic', label: 'CLASSIC' },
+  { key: 'cockpit', label: 'COCKPIT' },
+];
+
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 18 18" width="13" height="13" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
@@ -27,7 +33,7 @@ function GoogleIcon() {
   );
 }
 
-export default function Setup({ open, onProgress, settings, uid, userEmail, onSignIn, onSignOut, onClose, onStepSetting, onToggleSetting }) {
+export default function Setup({ open, onProgress, settings, uid, userEmail, onSignIn, onSignOut, onClose, onStepSetting, onToggleSetting, ui, onSetUi }) {
   return (
     <SlidePanel side="right" open={open} onClose={onClose} onProgress={onProgress} ariaLabel="Set-up">
       <div className="panel-header">
@@ -109,6 +115,36 @@ export default function Setup({ open, onProgress, settings, uid, userEmail, onSi
           })}
         </div>
       </div>
+
+      {onSetUi && (
+        <div className="setup-row">
+          <div className="setup-label">
+            INTERFACE
+            <span className="sync-badge">BETA</span>
+          </div>
+          <div className="theme-row" role="radiogroup" aria-label="Interface">
+            {INTERFACES.map((it) => {
+              const cur = (ui || 'classic') === it.key;
+              return (
+                <button
+                  type="button"
+                  key={it.key}
+                  role="radio"
+                  aria-checked={cur}
+                  className="theme-btn"
+                  style={{
+                    borderColor: cur ? 'var(--accent)' : 'var(--t-hair)',
+                    color: cur ? 'var(--t-text)' : 'var(--t-muted)',
+                  }}
+                  onClick={() => onSetUi(it.key)}
+                >
+                  {it.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="setup-row setup-row--sync">
         <div className="setup-label">
