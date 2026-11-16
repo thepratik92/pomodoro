@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { Component, lazy, Suspense, useEffect } from 'react';
 import { THEME_COLOR, useTempo } from './hooks/useTempo';
 import { cockpitAvailable, useUiVariant } from './hooks/useUiVariant';
 import ClassicApp from './ClassicApp';
@@ -11,6 +11,28 @@ import ClassicApp from './ClassicApp';
 const CockpitApp = __COCKPIT_BETA__ ? lazy(() => import('./cockpit/CockpitApp.jsx')) : null;
 
 const COCKPIT_THEME_COLOR = { dark: '#0b0b0c', light: '#e4e4e1', sepia: '#cdb596' };
+
+/**
+ * A beta must never cost anyone the app. If the cockpit fails to load or
+ * throws while drawing, this hands the screen back to the classic interface
+ * instead of leaving a blank page, and says why in the console.
+ */
+class CockpitBoundary extends Component {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error) {
+    console.error('Cockpit beta failed — showing the classic interface instead.', error);
+    this.props.onFail();
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 /**
  * One timer, two interfaces. useTempo lives here, above the choice of shell,
@@ -39,11 +61,15 @@ export default function App() {
 
   if (cockpit) {
     return (
-      // The fallback is blank on purpose: the chunk is small and local, and a
-      // flash of the classic interface on the way in would be worse.
-      <Suspense fallback={null}>
-        <CockpitApp tempo={tempo} {...uiProps} />
-      </Suspense>
+      // onFail switches the preference back, so the next render — and the
+      // next visit — is the classic interface.
+      <CockpitBoundary onFail={() => setUi('classic')}>
+        {/* The fallback is blank on purpose: the chunk is small and local, and
+            a flash of the classic interface on the way in would be worse. */}
+        <Suspense fallback={null}>
+          <CockpitApp tempo={tempo} {...uiProps} />
+        </Suspense>
+      </CockpitBoundary>
     );
   }
   return <ClassicApp tempo={tempo} {...uiProps} />;
