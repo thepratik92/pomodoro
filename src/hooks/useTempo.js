@@ -32,6 +32,9 @@ const STEPPER_DEFS = {
 
 export const BUCKETS = ['today', 'tomorrow', 'someday'];
 
+/** Browser chrome colour per theme, for the classic interface. */
+export const THEME_COLOR = { dark: '#060607', light: '#f5f5f2', sepia: '#f1e7d2' };
+
 const initialState = {
   mode: 'focus',
   running: false,
@@ -330,7 +333,7 @@ export function useTempo() {
     document.documentElement.setAttribute('data-mode', state.mode);
     document.documentElement.setAttribute('data-theme', theme);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', { light: '#f5f5f2', sepia: '#f1e7d2' }[theme] || '#060607');
+    if (meta) meta.setAttribute('content', THEME_COLOR[theme] || THEME_COLOR.dark);
     // The app draws behind the Android system bars, so the bar icons have to
     // follow the theme or they vanish into a matching background.
     try {

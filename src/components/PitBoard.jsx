@@ -95,9 +95,9 @@ export default function PitBoard({
                       type="button"
                       className="todo-check"
                       style={{
-                        background: t.done ? '#FF3B24' : 'none',
-                        borderColor: t.done ? '#FF3B24' : 'var(--t-hair2)',
-                        boxShadow: t.done ? '0 0 8px rgba(255,59,36,.4)' : 'none',
+                        background: t.done ? 'var(--done, #FF3B24)' : 'none',
+                        borderColor: t.done ? 'var(--done, #FF3B24)' : 'var(--t-hair2)',
+                        boxShadow: t.done ? '0 0 8px var(--done-glow, rgba(255,59,36,.4))' : 'none',
                       }}
                       onClick={() => onToggleTodo(t.id)}
                       aria-label="Toggle done"

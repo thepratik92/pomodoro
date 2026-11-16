@@ -138,6 +138,7 @@ export default function SlidePanel({ side, open, onClose, onProgress, ariaLabel,
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
+      data-open={open ? 'true' : 'false'}
       className={'panel ' + (side === 'left' ? 'panel--left' : 'panel--right') + (className ? ' ' + className : '')}
       style={{ x, touchAction: 'pan-y' }}
       onPointerDown={onPointerDown}
