@@ -231,3 +231,50 @@ button:focus:not(:focus-visible) {
     border-color: var(--t-hair2);
   }
 }
+
+/* Shown over the classic interface when the cockpit beta fails to start. */
+.beta-notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + var(--safe-bottom));
+  transform: translateX(-50%);
+  z-index: 100;
+  width: min(calc(100vw - 32px), 520px);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 14px 14px 18px;
+  border: 1px solid var(--t-hair2);
+  border-radius: 12px;
+  background: var(--t-panel);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--t-text);
+}
+.beta-notice > div {
+  flex: 1;
+  min-width: 0;
+}
+.beta-notice strong {
+  display: block;
+  font-weight: 600;
+}
+.beta-notice span {
+  display: block;
+  margin-top: 4px;
+  color: var(--t-muted);
+  overflow-wrap: anywhere;
+}
+.beta-notice button {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--t-hair);
+  border-radius: 50%;
+  background: none;
+  color: var(--t-muted);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}

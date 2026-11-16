@@ -1,9 +1,6 @@
 import { useCallback, useLayoutEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
-import '@fontsource/barlow/300.css';
-import '@fontsource/barlow/400.css';
-import '@fontsource/barlow/500.css';
-import '@fontsource/barlow/600.css';
+import './fonts/fonts.css';
 import './cockpit.css';
 import './skin.css';
 import { LapsDial, StintDial, TrendDial } from './Instruments';

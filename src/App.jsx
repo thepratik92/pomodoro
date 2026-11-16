@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useEffect } from 'react';
+import { Component, lazy, Suspense, useEffect, useState } from 'react';
 import { THEME_COLOR, useTempo } from './hooks/useTempo';
 import { cockpitAvailable, useUiVariant } from './hooks/useUiVariant';
 import ClassicApp from './ClassicApp';
@@ -26,7 +26,7 @@ class CockpitBoundary extends Component {
 
   componentDidCatch(error) {
     console.error('Cockpit beta failed — showing the classic interface instead.', error);
-    this.props.onFail();
+    this.props.onFail(error);
   }
 
   render() {
@@ -57,13 +57,21 @@ export default function App() {
     if (meta) meta.setAttribute('content', colors[theme] || colors.dark);
   }, [cockpit, theme, mode]);
 
+  // Why the beta gave up, if it did — shown over the classic interface so a
+  // failed switch does not look like a switch that simply did nothing.
+  const [betaError, setBetaError] = useState(null);
+  const onBetaFail = (error) => {
+    setBetaError(String(error?.message || error || 'unknown error'));
+    setUi('classic');
+  };
+
   const uiProps = cockpitAvailable ? { ui, onSetUi: setUi } : {};
 
   if (cockpit) {
     return (
       // onFail switches the preference back, so the next render — and the
       // next visit — is the classic interface.
-      <CockpitBoundary onFail={() => setUi('classic')}>
+      <CockpitBoundary onFail={onBetaFail}>
         {/* The fallback is blank on purpose: the chunk is small and local, and
             a flash of the classic interface on the way in would be worse. */}
         <Suspense fallback={null}>
@@ -72,5 +80,20 @@ export default function App() {
       </CockpitBoundary>
     );
   }
-  return <ClassicApp tempo={tempo} {...uiProps} />;
+  return (
+    <>
+      <ClassicApp tempo={tempo} {...uiProps} />
+      {betaError && (
+        <div className="beta-notice" role="alert">
+          <div>
+            <strong>The Cockpit beta could not start, so you are on the classic interface.</strong>
+            <span>{betaError}</span>
+          </div>
+          <button type="button" onClick={() => setBetaError(null)} aria-label="Dismiss">
+            ×
+          </button>
+        </div>
+      )}
+    </>
+  );
 }

@@ -45,4 +45,6 @@ the Android build.
   `src/cockpit/skin.css`.
 - **Web only:** `__COCKPIT_BETA__` (see `vite.config.js`) is false when
   `CAP_BUILD=1`, so the chunk is dropped from the APK.
+- **No extra dependencies:** the typeface (Barlow, OFL) is checked in under
+  `src/cockpit/fonts/`.
 - **Check it:** `npm run build && npm run preview`, then `node smoke-cockpit.mjs`.
